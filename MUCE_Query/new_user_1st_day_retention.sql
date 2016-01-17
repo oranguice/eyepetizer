@@ -8,12 +8,12 @@ from (
 			( 
 					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
 						from muce_topic.applicationstart
-						where is_start_new = 1 and p_date >= 20151212 and p_date <= 20151218 and p_product = 'IOS_EYEPETIZER'
+						where is_start_new = 1 and p_date >= 20160109 and p_date <= 20160115 and p_product = 'IOS_EYEPETIZER'
 					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
 				union all 
 					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
 						from muce_topic.applicationstart
-						where p_date >= 20151213 and p_date <= 20151219 and p_product = 'IOS_EYEPETIZER'
+						where p_date >= 20160110 and p_date <= 20160116 and p_product = 'IOS_EYEPETIZER'
 					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
 			)ta 
 			group by pp_date, id
@@ -34,12 +34,12 @@ from (
 			( 
 					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
 						from muce_topic.applicationstart
-						where is_start_new = 1 and p_date >= 20151212 and p_date <= 20151218 and p_product = 'ANDROID_EYEPETIZER'
+						where is_start_new = 1 and p_date >= 20160109 and p_date <= 20160115 and p_product = 'ANDROID_EYEPETIZER'
 					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
 				union all 
 					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
 						from muce_topic.applicationstart
-						where p_date >= 20151213 and p_date <= 20151219 and p_product = 'ANDROID_EYEPETIZER'
+						where p_date >= 20160110 and p_date <= 20160116 and p_product = 'ANDROID_EYEPETIZER'
 					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
 			)ta 
 			group by pp_date, id

@@ -4,12 +4,12 @@ from (
 	from (
 		select id, 1 as flag
 		from muce_topic.applicationstart
-		where p_product='IOS_EYEPETIZER' and is_start_new = 1 and p_date >= 20160102 and p_date <= 20160108
+		where p_product='IOS_EYEPETIZER' and is_start_new = 1 and p_date >= 20160109 and p_date <= 20160115
 		group by id
 	union all
 		select id, 2 as flag
 		from muce_topic.applicationstart
-		where p_product='IOS_EYEPETIZER' and p_date >= 20160109 and p_date <= 20160115
+		where p_product='IOS_EYEPETIZER' and p_date >= 20160116 and p_date <= 20160122
 		group by id) a
 	group by id) b
 --iOS 新用户本周
@@ -22,12 +22,12 @@ from (
 	from (
 		select id, 1 as flag
 		from muce_topic.applicationstart
-		where p_product='IOS_EYEPETIZER' and is_start_new = 0 and p_date >= 20160102 and p_date <= 20160108
+		where p_product='IOS_EYEPETIZER' and is_start_new = 0 and p_date >= 20160109 and p_date <= 20160115
 		group by id
 	union all
 		select id, 2 as flag
 		from muce_topic.applicationstart
-		where p_product='IOS_EYEPETIZER' and p_date >= 20160109 and p_date <= 20160115
+		where p_product='IOS_EYEPETIZER' and p_date >= 20160116 and p_date <= 20160122
 		group by id) a
 	group by id) b
 --iOS 老用户本周
@@ -40,12 +40,12 @@ from (
 	from (
 		select id, 1 as flag
 		from muce_topic.applicationstart
-		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160102 and p_date <= 20160108
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160109 and p_date <= 20160115
 		group by id
 	union all
 		select id, 2 as flag
 		from muce_topic.applicationstart
-		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160109 and p_date <= 20160115
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160116 and p_date <= 20160122
 		group by id) a
 	group by id) b
 --Android 新用户本周
@@ -58,12 +58,12 @@ from (
 	from (
 		select id, 1 as flag
 		from muce_topic.applicationstart
-		where p_product='ANDROID_EYEPETIZER' and is_start_new = 0 and p_date >= 20160102 and p_date <= 20160108
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 0 and p_date >= 20160109 and p_date <= 20160115
 		group by id
 	union all
 		select id, 2 as flag
 		from muce_topic.applicationstart
-		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160109 and p_date <= 20160115
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160116 and p_date <= 20160122
 		group by id) a
 	group by id) b
 --Android 老用户本周

@@ -4,13 +4,12 @@ from (
 	from (
 		select id, 1 as flag
 		from muce_topic.applicationstart
-		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20151001 and p_date <= 20151031
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160206 and p_date <= 20160212
 		group by id
 	union all
 		select id, 2 as flag
 		from muce_topic.applicationstart
-		where p_product='ANDROID_EYEPETIZER' and p_date >= 20151101 and p_date <= 20151131
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160213 and p_date <= 20160219
 		group by id) a
 	group by id) b
-group by flag_2
 --10月新用户 retention

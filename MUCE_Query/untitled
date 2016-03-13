@@ -1,0 +1,2513 @@
+select client_first_source, count(distinct id)
+from muce_topic.applicationstart
+where p_date >= 20151219 and p_date <= 20151225 and p_product = 'ANDROID_EYEPETIZER' and client_first_source like '%eyepetizer%'
+group by client_first_source
+
+
+http://www.wandoujia.com/eyepetizer/download?utm_source=bilibili&utm_medium=live&utm_campaign=eyepetizer-test
+
+
+http://space.bilibili.com/1543735/#!/setting
+
+http://wandou.im/14fzjt
+
+
+
+
+select p_date, client_first_source , count(distinct id)
+from muce_topic.applicationstart
+where p_date >= 20151207 and p_date <= 20151227 and client_first_source in ('eyepetizer_xiaomi_ad','eyepetizer_meizu_market')
+group by p_date, client_first_source
+
+
+select p_date, sum(case when p_product = 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20151207 and p_date <= 20151227 and click_name = 'Play'
+group by p_date
+
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20151223 and p_date <= 20151226 and client_first_source = 'eyepetizer_xiaomi_market'
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20151224 and p_date <= 20151227
+		group by id) a
+	group by id) b
+--ANDROID 新用户本周
+
+
+
+select pp_date, sum(case when col_flag = 1 then col_num else 0 end), sum(case when col_flag = 2 then col_num else 0 end), sum(case when col_flag = 3 then col_num else 0 end)
+from (
+	select pp_date, col_flag, count(*) as col_num
+		from
+		(
+			select pp_date, id, sum(col_flag) as col_flag 
+			from 
+			( 
+					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
+						from muce_topic.applicationstart
+						where is_start_new = 1 and  p_date >= 20151223 and p_date <= 20151226 and p_product = 'ANDROID_EYEPETIZER' and client_first_source = 'eyepetizer_xiaomi_market'
+					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
+				union all 
+					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
+						from muce_topic.applicationstart
+						where p_date >= 20151224 and p_date <= 20151227 and p_product = 'ANDROID_EYEPETIZER'
+					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
+			)ta 
+			group by pp_date, id
+		)tb
+	group by pp_date, col_flag )tc
+group by pp_date
+--Android新用户次日活跃
+
+
+
+select pp_date, device_os_version, sum(case when col_flag = 1 then 1 else 0 end), sum(case when col_flag = 2 then 1 else 0 end), sum(case when col_flag = 3 then 1 else 0 end)
+from (
+	select pp_date, device_os_version, id, sum(col_flag) as col_flag
+	from (
+			select concat(substring(a.p_date, 1, 4), '-', substring(a.p_date, 5, 2), '-', substring(a.p_date, 7, 2)) as pp_date, a.id, b.device_os_version, 1 as col_flag
+			from (
+				select p_date, id
+				from muce_topic.applicationstart
+				where p_date >= 20151101 and p_date <= 20151130 and p_product = 'ANDROID_EYEPETIZER' and is_start_new = 1
+				group by p_date, id) a
+			join (
+				select p_date, id, device_os_version
+				from muce_topic.applicationactive
+				where p_date >= 20151101 and p_date <= 20151130 and p_product = 'ANDROID_EYEPETIZER') b
+			on a.p_date = b.p_date and a.id = b.id
+			group by concat(substring(a.p_date, 1, 4), '-', substring(a.p_date, 5, 2), '-', substring(a.p_date, 7, 2)), a.id, b.device_os_version
+		union all
+			select date_sub(concat(substring(c.p_date, 1, 4), '-', substring(c.p_date, 5, 2), '-', substring(c.p_date, 7, 2)), 1) as pp_date, c.id, d.device_os_version, 2 as col_flag
+			from (
+				select p_date, id
+				from muce_topic.applicationstart
+				where p_date >= 20151102 and p_date <= 20151201 and p_product = 'ANDROID_EYEPETIZER'
+				group by p_date, id) c
+			join (
+				select p_date, id, device_os_version
+				from muce_topic.applicationactive
+				where p_date >= 20151102 and p_date <= 20151201 and p_product = 'ANDROID_EYEPETIZER') d
+			on c.p_date = d.p_date and c.id = d.id
+			group by date_sub(concat(substring(c.p_date, 1, 4), '-', substring(c.p_date, 5, 2), '-', substring(c.p_date, 7, 2)), 1), c.id, d.device_os_version
+			) ta
+	group by pp_date, device_os_version, id) tb
+group by pp_date, device_os_version
+
+
+
+
+select p_date, count(distinct id)
+from muce_topic.applicationstart
+where p_date >= 20151226 and p_date <= 20151228 and p_product = 'ANDROID_EYEPETIZER' and is_start_new = 1 and client_first_source = 'eyepetizer_xiaomi_market'
+group by p_date
+
+select p_date, sum(case when p_product = 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160102 and p_date <= 20160103 and click_name = 'Play'
+group by p_date
+
+
+
+and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc')
+
+
+
+
+
+
+select a.id, b.device_model
+from (
+	select id
+	from muce_app_client.taskevent
+	where p_product= 'ANDROID_EYEPETIZER' and p_date = 20151120 and task_action = "PLAY" and task_status='END' and content_id = 'player_error') a
+join (
+	select id, device_model
+	from muce_app_client.applicationactiveevent
+	where p_product= 'ANDROID_EYEPETIZER' and p_date = 20151120) b
+on a.id = b.id
+
+
+
+select content_id, sum(case when p_product = 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.click
+where p_date = 20160103 and click_name = 'Play'
+group by content_id
+
+
+
+select click_normalized_url, count(*) as COUNT
+from muce_topic.click
+where p_product = 'RIPPLE' and p_date >= '20151228' and p_date <= '20160103' and click_name = 'share'
+group by  click_normalized_url
+order by COUNT DESC LIMIT 100
+
+select aaa, sum(uv_num), sum(play_id_num), sum(share_id_num), sum(fav_id_num) from ( select content_id as aaa, count(distinct id) as uv_num, '0' as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_app_client.showevent where p_product= 'IOS_EYEPETIZER' and p_date= 20150106 and content_id IN (4548,4398,4052,3546,4066) group by content_id union all select content_id as aaa, '0' as uv_num, count(distinct id) as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product='IOS_EYEPETIZER' and click_name='Play' and p_date= 20150106 and content_id IN (4548,4398,4052,3546,4066) group by content_id union all select case when content_id > 0 then content_id else substring(content_id, 10, length(content_id) - 10) end as aaa, '0' as uv_num, '0' as play_id_num, count(distinct id) as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') and p_date= 20150106 and (content_id like '%4548%' or content_id like '%4398%' or content_id like '%4052%' or content_id like '%3546%' or content_id like '%4066%') group by case when content_id > 0 then content_id else substring(content_id, 10, length(content_id) - 10) end union all select content_id as aaa, '0' as uv_num, '0' as play_id_num, '0' as share_id_num, count(distinct id) as fav_id_num from muce_app_client.clickevent where p_product = 'IOS_EYEPETIZER' and click_name = 'Favorite' and p_date= 20150106 and content_id IN (4548,4398,4052,3546,4066) group by content_id) a group by aaa --iOS 20150106
+
+select aaa, sum(uv_num), sum(play_id_num), sum(share_id_num), sum(fav_id_num) from ( select content_id as aaa, count(distinct id) as uv_num, '0' as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_app_client.showevent where p_product= 'IOS_EYEPETIZER' and p_date= 20150106 and content_id IN (4548,4398,4052,3546,4066) group by content_id union all select content_id as aaa, '0' as uv_num, count(distinct id) as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product='IOS_EYEPETIZER' and click_name='Play' and p_date= 20150106 and content_id IN (4548,4398,4052,3546,4066) group by content_id union all select case when content_id > 0 then content_id else substring(content_id, 10, length(content_id) - 10) end as aaa, '0' as uv_num, '0' as play_id_num, count(distinct id) as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') and p_date= 20150106 and (content_id like '%4548%' or content_id like '%4398%' or content_id like '%4052%' or content_id like '%3546%' or content_id like '%4066%') group by case when content_id > 0 then content_id else substring(content_id, 10, length(content_id) - 10) end union all select content_id as aaa, '0' as uv_num, '0' as play_id_num, '0' as share_id_num, count(distinct id) as fav_id_num from muce_app_client.clickevent where p_product = 'IOS_EYEPETIZER' and click_name = 'Favorite' and p_date= 20150106 and content_id IN (4548,4398,4052,3546,4066) group by content_id) a group by aaa --iOS 20150106
+
+
+
+
+
+select aaa, sum(uv_num), sum(play_id_num), sum(share_id_num), sum(fav_id_num) from ( select content_id as aaa, count(distinct id) as uv_num, '0' as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_topic.show where p_product= 'IOS_EYEPETIZER' and p_date= 20150105 and content_id IN (3912,3952,4054,3958,3974) group by content_id union all select content_id as aaa, '0' as uv_num, count(distinct id) as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_topic.click where p_product='IOS_EYEPETIZER' and click_name='Play' and p_date= 20150105 and content_id IN (3912,3952,4054,3958,3974) group by content_id union all select case when content_id > 0 then content_id else substring(content_id, 10, length(content_id) - 10) end as aaa, '0' as uv_num, '0' as play_id_num, count(distinct id) as share_id_num, '0' as fav_id_num from muce_topic.click where p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') and p_date= 20150105 and (content_id like '%3912%' or content_id like '%3952%' or content_id like '%4054%' or content_id like '%3958%' or content_id like '%3974%') group by case when content_id > 0 then content_id else substring(content_id, 10, length(content_id) - 10) end union all select content_id as aaa, '0' as uv_num, '0' as play_id_num, '0' as share_id_num, count(distinct id) as fav_id_num from muce_topic.click where p_product = 'IOS_EYEPETIZER' and click_name = 'Favorite' and p_date= 20150105 and content_id IN (3912,3952,4054,3958,3974) group by content_id) a group by aaa --iOS 20150105
+
+
+
+select content_id as aaa, '0' as uv_num, count(distinct id) as play_id_num, '0' as share_id_num, '0' as fav_id_num
+from muce_topic.click
+where p_product='IOS_EYEPETIZER' and click_name='Play' and p_date= 20150105
+group by content_id
+
+
+
+
+select pp_date, sum(case when col_flag = 1 then col_num else 0 end), sum(case when col_flag = 2 then col_num else 0 end), sum(case when col_flag = 3 then col_num else 0 end)
+from (
+	select pp_date, col_flag, count(*) as col_num
+		from
+		(
+			select pp_date, id, sum(col_flag) as col_flag 
+			from 
+			( 
+					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
+						from muce_topic.applicationstart
+						where is_start_new = 1 and p_date >= 20150901 and p_date <= 20151031 and p_product = 'ANDROID_EYEPETIZER'
+					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
+				union all 
+					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
+						from muce_topic.applicationstart
+						where p_date >= 20150902 and p_date <= 20151101 and p_product = 'ANDROID_EYEPETIZER'
+					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
+			)ta 
+			group by pp_date, id
+		)tb
+	group by pp_date, col_flag )tc
+group by pp_date
+--Android新用户次日活跃 09
+
+
+同是广告，国外的就叫好国内的就有人骂。画质渣？拍摄手法不够好？非也，本来是条以树立品牌形象的 Brand Advertising，如果结尾字幕没保时捷的名字，也就是个纪录片了。怪不得老罗说崇洋媚外不是问题，自身的不自信才是最大症结。
+‘
+
+
+
+
+
+select p_date, count(distinct id), count(*)
+from muce_topic.click
+where p_product = 'IOS_EYEPETIZER' and click_name = 'Play' and p_date >= 20151201 and p_date <= 20160101
+group by p_date
+
+
+说实话，虽是广告，但整个片子还是蛮有味道的。学广告的可能更了解一些，消费者购买时所追求的是“实质利益+心理利益”，而品牌广告正是建立在提高“心理利益”上的。杜锋篮球生涯的很多追求与保时捷所呈现的品质还是很契合的，是个不错的品牌广告案例。
+
+
+
+
+select p_date,
+	sum(case when p_product = 'IOS_EYEPETIZER' and click_name='Play' then 1 else 0 end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_name = 'Play' then 1 else 0 end),
+	sum(case when p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then 1 else 0 end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160102 and p_date <= 20160107
+group by p_date
+--播放与分享用户人数
+
+
+select p_date,
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_name = 'Play' then 1 else 0 end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20151201 and p_date <= 20160107
+group by p_date
+
+
+select p_date, count(distinct case when p_product = 'IOS_EYEPETIZER' then id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_topic.applicationstart
+where p_date = 20150107
+group by p_date
+
+
+select p_date,
+	count(case when p_product = 'ANDROID_EYEPETIZER' and click_name='Play' then id else null end),
+	count(case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then id else null end)
+from muce_topic.click
+where p_date >= 20160102 and p_date <= 20160107
+group by p_date
+
+
+select p_date, count(distinct id)
+from muce_topic.applicationstart
+where is_start_new = 1 and p_product = 'ANDROID_EYEPETIZER' and client_first_source = 'eyepetizer_yingyongbao_market' and p_date >= 20160131 and p_date <= 20160221
+group by p_date
+
+
+
+
+
+select content_id, sum(uv_num), sum(play_id_num), sum(share_id_num), sum(fav_id_num)
+from (
+	select content_id, count(distinct id) as uv_num, '0' as play_id_num, '0' as share_id_num, '0' as fav_id_num
+	from muce_app_client.showevent where p_product= 'ANDROID_EYEPETIZER'  and p_date = 20160108 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id in (4036,3976,4650,4558,4058) group by content_id union all select content_id, '0' as uv_num, count(distinct id) as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product='ANDROID_EYEPETIZER'  and p_date = 20160108 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id in (4036,3976,4650,4558,4058) and click_name = 'Play' group by content_id union all select content_id, '0' as uv_num, '0' as play_id_num, count(distinct id) as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') and p_date = 20160108 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id in (4036,3976,4650,4558,4058) group by content_id union all select content_id, '0' as uv_num, '0' as play_id_num, '0' as share_id_num, count(distinct id) as fav_id_num from muce_app_client.clickevent where p_product = 'ANDROID_EYEPETIZER' and click_name = 'Favorite' and p_date = 20160108 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id in (4036,3976,4650,4558,4058) group by content_id) a group by content_id --Android 20160108
+
+
+
+select count(distinct case when p_product = 'IOS_EYEPETIZER' then id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_topic.applicationstart
+where p_date >= 20150623 and p_date <= 201507022
+
+
+select p_date, p_hourmin, count(distinct case when p_product = 'IOS_EYEPETIZER' then id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_app_client.applicationstartevent
+where p_date >= 20151101 and p_date <= 20151130
+group by p_date, p_hourmin
+
+'eyepetizer_meizu_market'
+
+
+Hi Eyepetizer,
+      
+     我们是国际环保组织WildAid野生救援，我们是全球唯一一家致力于通过媒体传播影响受众消费濒危野生动物制品，达到保护野生动物和保护环境的NGO，我们的口号是：没有买卖就没有杀害。
+
+      此次冒昧打扰，是因为了解到开眼APP是一款独特的视频类app，跟我们想要传达的理念和视频内容非常吻合。我们每年在全国开展线下公益活动外，更重要的是，我们每年也会制作很多明星公益宣传片，各种长短都有，我们希望与贵司建立联系，共同探讨合作计划，以此拓展贵司的影响力。
+     
+     附件是我们协会的简介，烦请下载查看。另，附上一些视频媒体资料的链接，方便你浏览：
+
+     1. http://v.youku.com/v_show/id_XODU1ODE4ODA0.html?from=y1.7-2
+     2.http://v.youku.com/v_show/id_XMTQxNDg3NDA4OA==.html?from=y1.7-2
+
+      如贵司有兴趣，麻烦回复我邮件吧！我们再具体约时间详谈。
+      谢谢！
+
+
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='IOS_EYEPETIZER' and is_start_new = 1 and p_date >= 20160108 and p_date <= 20160109 and substring(id, 40, 1) = '0'
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='IOS_EYEPETIZER' and p_date >= 20160109 and p_date <= 20160110
+		group by id) a
+	group by id) b
+--iOS 新用户本周
+
+
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='IOS_EYEPETIZER' and is_start_new = 0 and p_date >= 20160108 and p_date <= 20160109 and substring(id, 40, 1) = '0'
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='IOS_EYEPETIZER' and p_date >= 20160109 and p_date <= 20160110
+		group by id) a
+	group by id) b
+--iOS 老用户本周
+
+
+
+
+select pp_date, sum(case when col_flag = 1 then col_num else 0 end), sum(case when col_flag = 2 then col_num else 0 end), sum(case when col_flag = 3 then col_num else 0 end)
+from (
+	select pp_date, col_flag, count(*) as col_num
+		from
+		(
+			select pp_date, id, sum(col_flag) as col_flag 
+			from 
+			( 
+					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
+						from muce_topic.applicationstart
+						where is_start_new = 1 and p_date >= 20160101 and p_date <= 20160109 and p_product = 'IOS_EYEPETIZER' and substring(id, 40, 1) = '0'
+					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
+				union all 
+					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
+						from muce_topic.applicationstart
+						where p_date >= 20160102 and p_date <= 20160110 and p_product = 'IOS_EYEPETIZER'
+					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
+			)ta 
+			group by pp_date, id
+		)tb
+	group by pp_date, col_flag )tc
+group by pp_date
+
+
+
+
+select p_date, count(distinct id)
+from muce_topic.applicationstart
+where p_date >= 20160108 and p_date <= 20150109 and p_product = 'ANDROID_EYEPETIZER' and is_start_new = 1 and client_first_source = 'eyepetizer_meizu_market'
+group by p_date
+
+
+
+
+
+select p_date, id, account_uid, p_hourmin, 1
+from muce_app_client.applicationstart
+where p_date >= 20151201 and p_date <= 20151202 and p_product = 'IOS_EYEPETIZER'
+group by p_date, id, account_uid, p_hourmin
+
+
+select p_date, sum(case when p_product = 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20151121 and p_date <= 20160111 and content_id in ('3340', '3336', '3656', '4054', '4058')
+group by p_date
+
+
+
+select p_date, id, p_hourmin, 1
+from muce_app_client.applicationstartevent
+where p_date >= 20151201 and p_date <= 20151202 and p_product = 'IOS_EYEPETIZER'
+group by p_date, id, p_hourmin
+
+
+
+
+
+select id, p_hourmin, sum(flag)
+from (
+	select p_date, id, p_hourmin, 1 as flag
+	from muce_app_client.applicationstartevent
+	where p_date >= 20151201 and p_date <= 20160111 and p_product = 'ANDROID_EYEPETIZER'
+	group by p_date, id, p_hourmin) a
+group by id, p_hourmin
+
+
+select id, content_id, '', sum(case when click_name = 'Play' then 1 else 0 end), sum(case when click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20151201 and p_date <= 20160111 and p_product = 'ANDROID_EYEPETIZER'
+group by id, content_id
+
+
+select content_id, sum(uv_num), sum(play_id_num), sum(share_id_num), sum(fav_id_num) from ( select content_id, count(distinct id) as uv_num, '0' as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_topic.show where p_product= 'ANDROID_EYEPETIZER'  and p_date = 20160108 and content_id in (4036,3976,4650,4558,4058) group by content_id union all select content_id, '0' as uv_num, count(distinct id) as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_topic.click where p_product='ANDROID_EYEPETIZER'  and p_date = 20160108 and content_id in (4036,3976,4650,4558,4058) and click_name = 'Play' group by content_id union all select content_id, '0' as uv_num, '0' as play_id_num, count(distinct id) as share_id_num, '0' as fav_id_num from muce_topic.click where p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') and p_date = 20160108 and content_id in (4036,3976,4650,4558,4058) group by content_id union all        select content_id, '0' as uv_num, '0' as play_id_num, '0' as share_id_num, count(distinct id) as fav_id_num from muce_topic.click where p_product = 'ANDROID_EYEPETIZER' and click_name = 'Favorite' and p_date = 20160108 and content_id in (4036,3976,4650,4558,4058) group by content_id) a group by content_id --Android 20160108
+
+
+
+select id, case when length(content_id) < 6 then content_id else null end, '', sum(case when click_name = 'Play' then 1 else 0 end), sum(case when click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20151201 and p_date <= 20160111 and p_product = 'ANDROID_EYEPETIZER'
+group by id, case when length(content_id) < 6 then content_id else null end
+
+
+
+
+select p_date, client_version_name, count(distinct id)
+from muce_topic.applicationstart
+where p_date >= 20160101 and p_date <= 20160112
+group by p_date, client_version_name
+
+
+SET @row=0;
+SET @mid='';
+SELECT a.*,b.rownum FROM test a 
+INNER JOIN (
+SELECT cid, author, id, CASE WHEN @mid = author THEN @row:=@row+1 ELSE @row:=1 END rownum, @mid:=author MID 
+FROM test 
+ORDER BY cid,author,id DESC
+) b ON b.author=a.author AND b.cid=a.cid AND b.id=a.id  WHERE b.rownum<3;  
+
+
+
+
+select a.udid, a.category, max(a.num)
+from (
+	select udid, category, count(*) as num
+	from ios_play_share
+	where play_times > 0
+	group by udid, category
+	) a
+left outer join (
+	select udid, category, max(m) as max_num
+	from (
+		select udid, category, count(*) as m
+		from ios_play_share
+		where play_times > 0
+		group by udid, category) b
+	) c
+on a.udid = c.udid and a.category = c.category and a.num = c.max_num
+where c.max_num is null
+
+
+select a.udid, a.category, a.m
+from (
+	select udid, category, count(*) as m
+	from ios_play_share
+	where play_times > 0
+	group by udid, category) a
+join (
+	select udid, max(m) as max_num
+	from (
+		select udid, category, count(*) as m
+		from ios_play_share
+		where play_times > 0
+		group by udid, category) b
+	group by udid) c
+on a.udid = c.udid and a.m = c.max_num
+
+
+
+
+select @row_number := CASE
+	when @paiming = udid then @row_number + 1 else 1
+	end as num,
+	@paiming := udid as udid
+from ios_play_share
+limit 100
+
+
+
+select pp_date, sum(case when col_flag = 1 then col_num else 0 end), sum(case when col_flag = 2 then col_num else 0 end), sum(case when col_flag = 3 then col_num else 0 end)
+from (
+	select pp_date, col_flag, count(*) as col_num
+		from
+		(
+			select pp_date, id, sum(col_flag) as col_flag 
+			from 
+			( 
+					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
+						from muce_topic.applicationstart
+						where is_start_new = 0 and p_date >= 20160101 and p_date <= 20160112 and p_product = 'IOS_EYEPETIZER' and substring(id, 40, 1) in ('0','1','2','3')
+					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
+				union all 
+					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
+						from muce_topic.applicationstart
+						where p_date >= 20160102 and p_date <= 20160113 and p_product = 'IOS_EYEPETIZER'
+					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
+			)ta 
+			group by pp_date, id
+		)tb
+	group by pp_date, col_flag )tc
+group by pp_date
+--iOS老用户次日活跃
+
+
+
+
+select p_date, sum(case when view_url = 'landing/advertise/id' then 1 else 0 end), sum(case when view_url = 'landing/common' then 1 else 0 end)
+from muce_topic.show
+where p_date >= 20161201 and p_date <= 20160113 and p_product = 'ANDROID_EYEPETIZER' 
+group by p_date
+
+
+
+select p_hourmin, count(distinct case when p_product = 'IOS_EYEPETIZER' then id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_app_client.clickevent
+where p_date = 20160114 and click_name = 'Play'
+group by p_hourmin
+
+
+select distinct network_remote_ip 
+from muce_app_client.clickevent
+where p_date = 20160114 and substring(id, 40, 1) not in ('0','1','2','3') and click_name = 'Play' and p_product = 'IOS_EYEPETIZER'
+--小流量用户 IP
+
+1875775116
+1033171627
+1697168652
+1033172212
+1875775114
+1033171465
+
+select p_date, p_hourmin, content_id
+from muce_app_client.clickevent
+where p_date >= 20160113 and id = 'c14e2f1d3e227086dfc81a117a52f22c598babe0' and p_hourmin >= 2100
+group by p_date, p_hourmin, content_id
+
+https://www.google.com/analytics/web/?hl=zh-CN&pli=1#report/content-pages/a15790641w99262852p103243268/%3Fexplorer-table.plotKeys%3D%5B%5D%26explorer-table.secSegmentId%3Danalytics.operatingSystem%26explorer-table.advFilter%3D%5B%5B0%2C%22analytics.operatingSystem%22%2C%22PT%22%2C%22iOS%22%2C0%5D%5D%26_r.drilldown%3Danalytics.pagePath%3A%2Feyepetizer%2Fdetail.html/
+
+https://www.google.com/analytics/web/?hl=zh-CN&pli=1#report/content-event-pages/a15790641w99262852p103243268/%3F_u.date00%3D20151201%26_u.date01%3D20160115%26explorer-table.plotKeys%3D%5B%5D%26explorer-table.secSegmentId%3Danalytics.operatingSystem%26explorer-table.advFilter%3D%5B%5B0%2C%22analytics.operatingSystem%22%2C%22PT%22%2C%22iOS%22%2C0%5D%5D%26_r.drilldown%3Danalytics.pagePath%3A%2Feyepetizer%2Fdetail.html%2Canalytics.eventCategory%3Avideo/
+
+
+
+http://fusion.qq.com/cgi-bin/qzapps/unified_jump?appid=12082875&actionFlag=0&params=pname%3Dcom.wandoujia.eyepetizer%26versioncode%3D41%26channelid%3D%26actionflag%3D0
+
+http://fusion.qq.com/cgi-bin/qzapps/unified_jump?appid=12082875&actionFlag=0&params=pname%3Dcom.wandoujia.eyepetizer%26versioncode%3D41%26channelid%3D%26actionflag%3D0
+
+
+http://www.wandoujia.com/eyepetizer/download.html?utm_campaign=routine&utm_medium=share&utm_source=promotion-bar
+
+
+http://fusion.qq.com/cgi-bin/qzapps/unified_jump?appid=12082875&actionFlag=0&params=pname%3Dcom.wandoujia.eyepetizer%26versioncode%3D41%26channelid%3D%26actionflag%3D0
+
+http://fusion.qq.com/cgi-bin/qzapps/unified_jump?appid=12082875&actionFlag=0&params=pname%3Dcom.wandoujia.eyepetizer%26versioncode%3D41%26channelid%3D%26actionflag%3D0
+
+
+
+
+select click_name, count(distinct id), count(id)
+from muce_topic.click
+where p_date >= 20160101 and p_date <= 20160107 and p_product = 'IOS_EYEPETIZER' and click_name = 'Comment'
+group by click_name
+
+
+
+
+
+
+select b.p_date, count(distinct b.id), sum(b.num)
+from (
+	select p_date, id
+	from muce_topic.click
+	where p_date >= 20151217 and p_date <= 20151230 and click_name = 'Comment' and p_product = 'IOS_EYEPETIZER'
+	group by p_date, id) a
+join (
+	select p_date, id, count(*) as num
+	from muce_topic.click
+	where p_date >= 20151217 and p_date <= 20151230 and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') and p_product = 'IOS_EYEPETIZER'
+	group by p_date, id) b
+on a.p_date = b.p_date and a.id = b.id
+group by b.p_date
+
+
+
+
+
+select count(distinct a.id), sum(a.num)
+from (
+	select id, count(distinct p_date) as num
+	from muce_topic.applicationstart
+	where p_date >= 20151128 and p_date <= 20151204
+	group by id) a
+join (
+	select distinct id
+	from muce_topic.click
+	where p_date >= 20151205 and p_date <= 20160101 and click_name = 'Comment' and p_product = 'IOS_EYEPETIZER') b
+on a.id = b.id
+
+
+select count(distinct a.id), sum(a.num)
+from (
+	select id, count(distinct p_date) as num
+	from muce_topic.applicationstart
+	where p_date >= 20151205 and p_date <= 20151211
+	group by id) a
+join (
+	select distinct id
+	from muce_topic.click
+	where p_date >= 20151205 and p_date <= 20160101 and click_name = 'Comment' and p_product = 'IOS_EYEPETIZER') b
+on a.id = b.id
+
+
+select count(distinct a.id), sum(a.num)
+from (
+	select id, count(distinct p_date) as num
+	from muce_topic.applicationstart
+	where p_date >= 20151219 and p_date <= 20151225
+	group by id) a
+join (
+	select distinct id
+	from muce_topic.click
+	where p_date >= 20151205 and p_date <= 20160101 and click_name = 'Comment' and p_product = 'IOS_EYEPETIZER') b
+on a.id = b.id
+
+
+
+select count(distinct a.id), sum(a.num)
+from (
+	select id, count(distinct p_date) as num
+	from muce_topic.applicationstart
+	where p_date >= 20151205 and p_date <= 20151211 and p_product = 'IOS_EYEPETIZER'
+	group by id) a
+left outer join (
+	select distinct id
+	from muce_topic.click
+	where p_date >= 20151205 and p_date <= 20151211 and click_name = 'Comment' and p_product = 'IOS_EYEPETIZER') b
+on a.id = b.id
+where b.id is null
+
+
+select count(distinct a.id), sum(a.num)
+from (
+	select id, count(distinct p_date) as num
+	from muce_topic.applicationstart
+	where p_date >= 20151212 and p_date <= 20151218 and p_product = 'IOS_EYEPETIZER'
+	group by id) a
+left outer join (
+	select distinct id
+	from muce_topic.click
+	where p_date >= 20151212 and p_date <= 20151218 and click_name = 'Comment' and p_product = 'IOS_EYEPETIZER') b
+on a.id = b.id
+where b.id is null
+
+
+select count(distinct a.id), sum(a.num)
+from (
+	select id, count(distinct p_date) as num
+	from muce_topic.applicationstart
+	where p_date >= 20151219 and p_date <= 20151225 and p_product = 'IOS_EYEPETIZER'
+	group by id) a
+left outer join (
+	select distinct id
+	from muce_topic.click
+	where p_date >= 20151219 and p_date <= 20151225 and click_name = 'Comment' and p_product = 'IOS_EYEPETIZER') b
+on a.id = b.id
+where b.id is null
+
+
+
+select count(distinct a.id), sum(a.num)
+from (
+	select id, count(distinct p_date) as num
+	from muce_topic.applicationstart
+	where p_date >= 20151226 and p_date <= 20160101 and p_product = 'IOS_EYEPETIZER'
+	group by id) a
+left outer join (
+	select distinct id
+	from muce_topic.click
+	where p_date >= 20151226 and p_date <= 20160101 and click_name = 'Comment' and p_product = 'IOS_EYEPETIZER') b
+on a.id = b.id
+where b.id is null
+
+
+select count(distinct a.id), sum(a.num)
+from (
+	select id, count(distinct p_date) as num
+	from muce_topic.applicationstart
+	where p_date >= 20160102 and p_date <= 20160108 and p_product = 'IOS_EYEPETIZER'
+	group by id) a
+left outer join (
+	select distinct id
+	from muce_topic.click
+	where p_date >= 20160102 and p_date <= 20160108 and click_name = 'Comment' and p_product = 'IOS_EYEPETIZER') b
+on a.id = b.id
+where b.id is null
+
+
+select count(distinct a.id), sum(a.num)
+from (
+	select id, count(distinct p_date) as num
+	from muce_topic.applicationstart
+	where p_date >= 20160109 and p_date <= 20160115 and p_product = 'IOS_EYEPETIZER'
+	group by id) a
+left outer join (
+	select distinct id
+	from muce_topic.click
+	where p_date >= 20160109 and p_date <= 20160115 and click_name = 'Comment' and p_product = 'IOS_EYEPETIZER') b
+on a.id = b.id
+where b.id is null
+
+
+
+
+select count(distinct a.id), sum(a.num)
+from (
+	select id, count(distinct p_date) as num
+	from muce_topic.applicationstart
+	where p_date >= 20151226 and p_date <= 20160101 and p_product = 'IOS_EYEPETIZER'
+	group by id) a
+join (
+	select distinct id
+	from muce_topic.click
+	where p_date >= 20151226 and p_date <= 20160101 and click_name = 'Comment' and p_product = 'IOS_EYEPETIZER') b
+on a.id = b.id
+
+
+
+select count(distinct a.id), sum(a.num)
+from (
+	select id, count(distinct p_date) as num
+	from muce_topic.applicationstart
+	where p_date >= 20160109 and p_date <= 20160115 and p_product = 'IOS_EYEPETIZER'
+	group by id) a
+join (
+	select distinct id
+	from muce_topic.click
+	where p_date >= 20160109 and p_date <= 20160115 and click_name = 'Comment' and p_product = 'IOS_EYEPETIZER') b
+on a.id = b.id
+
+
+select count(distinct a.id), sum(a.num)
+from (
+	select id, count(*) as num
+	from muce_topic.click
+	where p_date >= 20160109 and p_date <= 20160115 and p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc')
+	group by id) a
+left outer join (
+	select distinct id
+	from muce_topic.click
+	where p_date >= 20160109 and p_date <= 20160115 and click_name = 'Comment' and p_product = 'IOS_EYEPETIZER') b
+on a.id = b.id
+where b.id is null
+
+
+
+select p_date, p_hourmin, count(distinct case when p_product = 'IOS_EYEPETIZER' then id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_app_client.applicationstartevent
+where p_date >= 20160101 and p_date <= 20160117
+group by p_date, p_hourmin
+
+
+
+select p_date, count(*)
+from muce_app_client.applicationstartevent
+where p_date >= 20160109 and p_date <= 20160110 and p_product = 'IOS_EYEPETIZER' and (p_hourmin = '0900' or p_hourmin = '1200')
+group by p_date
+
+
+select p_date, p_hourmin, count(distinct case when p_product = 'IOS_EYEPETIZER' then id else null end), sum(case when p_product = 'IOS_EYEPETIZER' then 1 else 0 end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end), sum(case when p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_app_client.clickevent
+where p_date >= 20160101 and p_date <= 20160117 and click_name = 'Play'
+group by p_date, p_hourmin
+
+
+
+select p_date, sum(case when p_product = 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160116 and p_date <= 20160117 and click_name = 'Play'
+group by p_date
+
+
+
+在主角最熟悉的擂台行刑，看似迎合实为侮辱，因为你已被剥夺过去的所得，困住双手，最终和自己的尊严一起被践踏的体无完肤，更为可怕的是，整个过程会被包装得在周围的观众看来是合情合理的。「国家机关」对阵「冠军先生」，可能这是对滥用强权的诠释。
+
+
+为了合成这些画面作者选用了佳能 5D Mark II 和 III 拍了 10 万多帧照片。中长焦选用了佳能 24-70mm 2.8 和 70-200mm 2.8，广角是三阳的 14mm 2.8，外加一部百微 100mm 2.8 macro。
+
+
+
+
+
+select count(distinct case when p_product = 'IOS_EYEPETIZER' then  id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_app_client.applicationstart
+where p_date = 20160118 and p_hourmin in ('0900','1000','1100','1200') 
+
+
+
+
+select p_date, count(distinct case when p_product = 'IOS_EYEPETIZER' then  id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_app_client.applicationstartevent
+where p_date >= 20160120 and p_date <= 20160121 and p_hourmin in ('0900','1000','1100','1200','1300','1400') 
+group by p_date
+
+
+
+select p_date, count(distinct case when p_product = 'IOS_EYEPETIZER' then  id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_app_client.applicationstartevent
+where p_date = 20160119 and p_hourmin in ('0900','1000','1100','1200','1300','1400') 
+group by p_date
+
+
+
+select p_date, count(distinct case when p_product = 'IOS_EYEPETIZER' and click_name = 'Play' then id else null end), sum(case when p_product = 'IOS_EYEPETIZER' and click_name = 'Play' then 1 else 0 end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end), sum(case when p_product = 'ANDROID_EYEPETIZER' and click_name = 'Play' then 1 else 0 end)
+from muce_app_client.clickevent
+where p_date >= 20160120 and p_date <= 20160121 and p_hourmin in ('0900','1000','1100','1200','1300','1400') 
+group by p_date
+
+
+
+EyepetizerLogger.onEvent(v.getContext(), EyepetizerLogger.EventId.CLICK, searchText, v,
+ViewLogPackage.Element.INPUT_BOX, ViewLogPackage.Action.SEARCH);
+
+
+
+
+
+String view_name, ViewLogPackage.Element element, ViewLogPackage.Action action) 
+searchText,ViewLogPackage.Element.INPUT_BOX, ViewLogPackage.Action.SEARCH
+
+click_action = 'SEARCH'
+click_name = ''
+
+
+
+select click_name, count(*)
+from muce_topic.click
+where p_date >= 20160209 and p_date <= 20160215 and p_product = 'ANDROID_EYEPETIZER' and click_action = 'SEARCH' and length(click_name) > 0
+group by click_name
+
+
+
+http://www.wandoujia.com/eyepetizer?utm_source=weibo&utm_medium=weibo-ad&utm_campaign=weibo-ad
+
+
+
+http://www.wandoujia.com/eyepetizer?utm_source=weibo&utm_medium=weibo-ad&utm_campaign=weibo-ad
+
+
+http://wandou.im/19ghpr
+
+
+
+
+click=ViewLogPackage{action=CLOSE, element=BUTTON, name=暂不开启, url_package=UrlPackage{normalized_url=autoDownload/userGuide, url=autoDownload/userGuide}}, from_click=ViewLogPackage{}, refer_click=ViewLogPackage{}}}
+ContentPackage{title=autoOpen:false,firstStart:false}}
+
+
+
+#开眼# 星战正在全球引起热潮，美国著名综艺「周六夜现场」在“新节目 - 卧底老板”中邀请到了星球大战第一军团的 BOSS 凯洛伦。本次节目他将伪装成雷达技师马特进入弑星者基地，体察普通员工的日常工作与生活。老板会有什么新发现呢？更多内容：O网页链接 播放： O秒拍视频
+
+
+
+
+
+select 
+ extra_package.timing_package.start as timing_start,
+ extra_package.timing_package.`end` as timing_end,
+ extra_package.timing_package.duration as timing_duration,
+ event_package.task_event.result as task_result 
+from muce_event_client.taskevent 
+where 
+ p_product= 'ANDROID_EYEPETIZER' and 
+ p_date >= 20160118 and 
+ common_package.client_package.version_code >= 70 and 
+ event_package.task_event.action = "PLAY" and 
+ event_package.task_event.status='PENDING' and
+ common_package.id_package.identity like "%9"
+sort by timing_start, timing_duration
+
+
+
+
+
+select p_date, count(distinct id)
+from muce_topic.applicationstart
+where p_date >= 20160101 and p_date <= 20160119 and p_product = 'ANDROID_EYEPETIZER' and client_first_source = 'eyepetizer_xiaomi_market' and is_start_new = 1
+group by p_date
+
+
+
+
+select pp_date, sum(case when col_flag = 1 then col_num else 0 end), sum(case when col_flag = 2 then col_num else 0 end), sum(case when col_flag = 3 then col_num else 0 end)
+from (
+	select pp_date, col_flag, count(*) as col_num
+		from
+		(
+			select pp_date, id, sum(col_flag) as col_flag 
+			from 
+			( 
+					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
+						from muce_topic.applicationstart
+						where is_start_new = 1 and p_date >= 20160101 and p_date <= 20160118 and p_product = 'ANDROID_EYEPETIZER' and client_first_source = 'eyepetizer_zhihuiyun_market'
+					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
+				union all 
+					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
+						from muce_topic.applicationstart
+						where p_date >= 20160102 and p_date <= 20160119 and p_product = 'ANDROID_EYEPETIZER'
+					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
+			)ta 
+			group by pp_date, id
+		)tb
+	group by pp_date, col_flag )tc
+group by pp_date
+--Android360渠道新用户次日活跃
+
+select count(distinct case when p_product = 'IOS_EYEPETIZER' then id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_topic.applicationstart
+where p_date >= 20151221 and p_date <= 20160119
+
+
+eyepetizer_wandoujia_market
+eyepetizer_baidu_market
+eyepetizer_360_market
+
+select pp_date, sum(case when col_flag = 1 then col_num else 0 end), sum(case when col_flag = 2 then col_num else 0 end), sum(case when col_flag = 3 then col_num else 0 end)
+from (
+	select pp_date, col_flag, count(*) as col_num
+		from
+		(
+			select pp_date, id, sum(col_flag) as col_flag 
+			from 
+			( 
+					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
+						from muce_topic.applicationstart
+						where is_start_new = 1 and p_date >= 20160118 and p_date <= 20160119 and p_product = 'ANDROID_EYEPETIZER' and client_first_source = 'eyepetizer_360_market'
+					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
+				union all 
+					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
+						from muce_topic.applicationstart
+						where p_date >= 20160119 and p_date <= 20160120 and p_product = 'ANDROID_EYEPETIZER'
+					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
+			)ta 
+			group by pp_date, id
+		)tb
+	group by pp_date, col_flag )tc
+group by pp_date
+--Android新用户次日活跃
+
+eyepetizer_xiaomi_market
+eyepetizer_guangdiantong_ad
+
+
+select pp_date, sum(case when col_flag = 3 then col_num else 0 end), sum(case when col_flag = 1 or col_flag = 3 then col_num else 0 end)
+from (
+	select pp_date, col_flag, count(*) as col_num
+		from
+		(
+			select pp_date, id, sum(col_flag) as col_flag 
+			from 
+			( 
+					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
+						from muce_topic.applicationstart
+						where is_start_new = 1 and p_date = 20160120 and p_product = 'ANDROID_EYEPETIZER' and client_first_source = 'eyepetizer_guangdiantong_ad'
+					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
+				union all 
+					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
+						from muce_topic.applicationstart
+						where p_date = 20160121 and p_product = 'ANDROID_EYEPETIZER'
+					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
+			)ta 
+			group by pp_date, id
+		)tb
+	group by pp_date, col_flag )tc
+group by pp_date
+--Android新用户次日活跃
+
+
+
+select 
+ extra_package.timing_package.start as timing_start,
+ extra_package.timing_package.`end` as timing_end,
+ extra_package.timing_package.duration as timing_duration,
+ event_package.task_event.result as task_result 
+from muce_event_client.taskevent 
+where 
+ p_product= 'ANDROID_EYEPETIZER' and 
+ p_date = 20160121 and 
+ common_package.client_package.version_code >= 70 and 
+ event_package.task_event.action = "PLAY" and 
+ event_package.task_event.status='PENDING' and
+ substring(common_package.id_package.identity, 40, 1) not in ('0','1','2','3')
+sort by timing_start, timing_duration
+
+
+
+select p_date, content_id, sum(case when click_name = 'Play' and p_product = 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when click_name = 'Play' and p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20151128 and p_date <= 20160120 and content_id in ('3452','4294')
+group by p_date, content_id
+
+
+
+guangdiantong
+
+
+
+select pp_date, sum(case when col_flag = 1 then col_num else 0 end), sum(case when col_flag = 2 then col_num else 0 end), sum(case when col_flag = 3 then col_num else 0 end)
+from (
+	select pp_date, col_flag, count(*) as col_num
+		from
+		(
+			select pp_date, id, sum(col_flag) as col_flag 
+			from 
+			( 
+					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
+						from muce_topic.applicationstart
+						where is_start_new = 0 and p_date >= 20151212 and p_date <= 20160120 and p_product = 'ANDROID_EYEPETIZER'
+					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
+				union all 
+					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
+						from muce_topic.applicationstart
+						where p_date >= 20151213 and p_date <= 20160121 and p_product = 'ANDROID_EYEPETIZER'
+					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
+			)ta 
+			group by pp_date, id
+		)tb
+	group by pp_date, col_flag )tc
+group by pp_date
+--Android新用户次日活跃
+
+
+
+select p_date, count(distinct id)
+from muce_topic.applicationstart
+where p_date >= 20160108 and p_date <= 20160121 and p_product = 'ANDROID_EYEPETIZER' and client_first_source = 'eyepetizer_yingyongbao_market' and is_start_new = 1
+group by p_date
+
+
+
+
+select 
+ extra_package.timing_package.start as timing_start,
+ extra_package.timing_package.`end` as timing_end,
+ extra_package.timing_package.duration as timing_duration,
+ event_package.task_event.result as task_result 
+from muce_event_client.taskevent 
+where 
+ p_product= 'ANDROID_EYEPETIZER' and 
+ p_date = 20160122 and 
+ common_package.client_package.version_code >= 70 and 
+ event_package.task_event.action = 'PLAY' and 
+ event_package.task_event.status='PENDING' and
+ substring(common_package.id_package.identity, 40, 1) not in ('0','1','2','3','4','5','6','7')
+sort by timing_start, timing_duration	
+			
+			
+			
+			
+			
+select p_date, count(distinct case when p_product = 'IOS_EYEPETIZER' and click_name = 'Play' then id else null end), sum(case when p_product = 'IOS_EYEPETIZER' and click_name = 'Play' then 1 else 0 end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end), sum(case when p_product = 'ANDROID_EYEPETIZER' and click_name = 'Play' then 1 else 0 end)
+from muce_app_client.clickevent
+where p_date >= 20160122 and p_date <= 20160122 and p_hourmin in ('0900','1000','1100','1200','1300','1400') 
+group by p_date
+
+
+
+select p_date, count(distinct case when p_product = 'IOS_EYEPETIZER' then  id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_app_client.applicationstartevent
+where p_date = 20160122 and p_hourmin in ('0900','1000','1100','1200','1300','1400') 
+group by p_date
+
+
+
+select p_date, count(distinct case when p_product = 'IOS_EYEPETIZER' then id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_app_client.applicationstartevent
+where p_date >= 20160109 and p_date <= 20160115 and p_hourmin >= 2200 and p_hourmin <= 2300
+group by p_date
+
+
+
+
+
+select p_date,
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_name='Play' then id else null end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_name = 'Play' then 1 else 0 end),
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then id else null end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160124 and p_date <= 20160124
+group by p_date
+--ANDROID播放与分享用户人数
+
+
+
+
+
+
+select 
+ extra_package.timing_package.start as timing_start,
+ extra_package.timing_package.`end` as timing_end,
+ extra_package.timing_package.duration as timing_duration,
+ event_package.task_event.result as task_result 
+from muce_event_client.taskevent 
+where 
+ p_product= 'ANDROID_EYEPETIZER' and 
+ p_date = 20160123 and 
+ common_package.client_package.version_code >= 70 and 
+ event_package.task_event.action = 'PLAY' and 
+ event_package.task_event.status='PENDING' and
+ substring(common_package.id_package.identity, 40, 1) in ('0','1','2','3','4','5','6','7')
+sort by timing_start, timing_duration	
+
+
+
+select p_date,
+	count(distinct case when p_product = 'IOS_EYEPETIZER' and click_name='Play' then id else null end),
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_name = 'Play' then id else null end),
+	count(distinct case when p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then id else null end),
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then id else null end)
+from muce_topic.click
+where p_date >= 201501001 and p_date <= 20151131
+group by p_date
+--播放与分享用户人数
+
+
+
+
+select pp_date, sum(case when col_flag = 3 then col_num else 0 end), sum(case when col_flag = 1 or col_flag = 3 then col_num else 0 end)
+from (
+	select pp_date, col_flag, count(*) as col_num
+		from
+		(
+			select pp_date, id, sum(col_flag) as col_flag 
+			from 
+			( 
+					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
+						from muce_topic.applicationstart
+						where is_start_new = 1 and p_date >= 20160119 and p_date <= 20160123 and p_product = 'ANDROID_EYEPETIZER' and client_first_source = 'eyepetizer_guangdiantong_ad'
+					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
+				union all 
+					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
+						from muce_topic.applicationstart
+						where p_date >= 20160120 and p_date <= 20160124 and p_product = 'ANDROID_EYEPETIZER'
+					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
+			)ta 
+			group by pp_date, id
+		)tb
+	group by pp_date, col_flag )tc
+group by pp_date
+--guangdiantong新用户次日活跃
+
+
+
+
+
+select p_date,
+	count(distinct case when p_product = 'IOS_EYEPETIZER' and click_name='Play' then id else null end),
+	sum(case when p_product = 'IOS_EYEPETIZER' and click_name = 'Play' then 1 else 0 end),
+	count(distinct case when p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then id else null end),
+	sum(case when p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then 1 else 0 end)
+from muce_app_client.clickevent
+where p_date = 20160125
+group by p_date
+--ios播放与分享用户人数
+
+
+[注1]1947年罗斯威尔飞碟坠毁事件; [注2]约50m×25m×2m，0.8%也就是20m³差不多有20吨; [注3]to hook up with俚语解释为「純肉體關係的短暫激情」; [注4]希腊裔美国作家，以创立了「赫芬顿邮报」闻名
+
+
+
+select p_date,
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_name='Play' then id else null end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_name = 'Play' then 1 else 0 end),
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then id else null end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160125 and p_date <= 20160125
+group by p_date
+--android播放与分享用户人数
+
+
+eyepetizer_guangdiantong_ad
+
+
+
+
+select udid, count(*)
+from muce_topic.click
+where p_date = 20160125 and p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name = 'Moment'
+group by udid
+
+
+select a.id
+from (
+	select distinct id
+	from muce_topic.click
+	where p_date = 20160125 and p_product = 'IOS_EYEPETIZER' and click_name like 'FeedPageEventClickhttp://wandou.im/1b3ze8') a join (
+	select distinct id
+	from muce_topic.click
+	where p_date = 20160125 and p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name = 'Moment' ) b
+on a.id = b.id
+
+
+select *
+from muce_topic.click
+where p_date = 20160125 and p_product = 'ANDROID_EYEPETIZER' and card_id = 28 and 
+--Android 活动点击
+
+
+
+
+
+
+StringBuilder stringBuilder = new StringBuilder();
+stringBuilder.append("autoDownload:")
+.append(Config.get(Const.SharedPreferences.ENABLE_AUTO_DOWNLOAD, false))
+.append("enableNotification:")
+.append(Config.get(Const.SharedPreferences.ENABLE_DAILY_PUSH_NOTIFICATION, true))
+.append("alert2g3g:")
+.append(Config.get(Const.SharedPreferences.ENABLE_CELLULAR_NOTIFICATION, true));
+
+TaskEvent.Builder builder = new TaskEvent.Builder();
+builder.action(TaskEvent.Action.USER_STAT).status(TaskEvent.Status.READY)
+.result(TaskEvent.Result.SUCCESS).result_info(stringBuilder.toString());
+
+
+
+
+click=ViewLogPackage{action=CLOSE, element=BUTTON, name=暂不开启, url_package=UrlPackage{normalized_url=autoDownload/userGuide, url=autoDownload/userGuide}}, from_click=ViewLogPackage{}, refer_click=ViewLogPackage{}}}
+ContentPackage{title=autoOpen:false,firstStart:false}}
+
+
+
+select id, click_action, click_name, click_element, content_title, is_start_new
+from muce_topic.click
+where p_date = 20160125 and p_product = 'ANDROID_EYEPETIZER' and click_url = 'autoDownload/userGuide'
+
+
+
+select p_date, sum(case when task_result_info like 'autoDownload%' then 1 else 0 end), sum(case when task_result_info like 'autoDownload:true%' then 1 else 0 end), sum(case when task_result_info like '%enableNotification:true%' then 1 else 0 end), sum(case when task_result_info like '%2g3g:true' then 1 else 0 end)
+from muce_topic.task
+where p_date >= 20160120 and p_date <= 20160125 and p_product = 'ANDROID_EYEPETIZER' and task_result_info like 'autoDownload%'
+group by p_date
+
+
+
+
+
+select a.id
+from (
+	select distinct id
+	from muce_topic.click
+	where p_date = 20160126 and p_product = 'IOS_EYEPETIZER' and click_name like 'FeedPageEventClickhttp://wandou.im/1b3ze8') a join (
+	select distinct id
+	from muce_topic.click
+	where p_date = 20160126 and p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name = 'Moment' ) b
+on a.id = b.id
+
+
+
+
+select a.id
+from (
+	select distinct id
+	from muce_topic.click
+	where p_date = 20160126 and p_product = 'ANDROID_EYEPETIZER' and card_id = 28) a
+join (
+	select distinct id
+	from muce_topic.click
+	where p_date = 20160126 and p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name = 'Moment') b
+on a.id = b.id
+
+
+select p_date, content_id, sum(case when p_product = 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.show
+where p_date >= 20160123 and p_date <= 20160126  and content_id in('5002')
+group by p_date, content_id
+
+
+select p_date, sum(case when p_product= 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product= 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160123 and p_date <= 20160126 and content_id in ('5002') and click_name = 'Play'
+group by p_date
+
+
+select p_date, count(*)
+from muce_topic.click
+where p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') and p_date >= 20160123 and p_date <= 20160126 and content_id = '5002'
+group by p_date
+
+
+
+select p_date,
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_name='Play' then id else null end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_name = 'Play' then 1 else 0 end),
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then id else null end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then 1 else 0 end)
+from muce_topic.click
+where p_date = 20160126
+group by p_date
+--android播放与分享用户人数
+
+
+select count(distinct id)
+from muce_topic.click
+where p_date = 20160126 and p_product = 'IOS_EYEPETIZER' and click_name like 'FeedPageEventClickhttp://wandou.im/1b3ze8'
+
+
+select count(distinct id)
+from muce_topic.click
+where p_date = 20160126 and p_product = 'ANDROID_EYEPETIZER' and card_id = 28
+
+select a.id
+from (
+	select distinct id
+	from muce_topic.applicationstart
+	where p_date >= 20151101 and p_date <= 20160126 and p_product = 'ANDROID_EYEPETIZER') a
+left outer join (
+	select distinct id
+	from muce_topic.click
+	where p_date >= 20160125 and p_date <= 20160126 and p_product = 'ANDROID_EYEPETIZER' and card_id = 28) b
+on a.id = b.id
+where b.id is null
+
+
+
+select p_date, count(distinct id)
+from muce_topic.applicationstart
+where p_date = 20160127 and p_product = 'ANDROID_EYEPETIZER'
+group by p_date
+
+
+
+select p_date,
+	count(distinct case when p_product = 'IOS_EYEPETIZER' and click_name='Play' then id else null end),
+	sum(case when p_product = 'IOS_EYEPETIZER' and click_name = 'Play' then 1 else 0 end),
+	count(distinct case when p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then id else null end),
+	sum(case when p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160127 and p_date <= 20160127
+group by p_date
+--ios播放与分享用户人数
+
+
+
+select p_date,
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_name='Play' then id else null end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_name = 'Play' then 1 else 0 end),
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then id else null end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160127 and p_date <= 20160127
+group by p_date
+--android播放与分享用户人数
+
+
+
+select count(distinct id)
+from muce_topic.applicationstart
+where p_date = 20160127 and p_product = 'ANDROID_EYEPETIZER' and client_first_source = 'eyepetizer_guangdiantongfeed_ad'
+
+
+
+select count(distinct id)
+from muce_topic.applicationstart
+
+
+
+
+select p_date, content_id, sum(case when p_product = 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.show
+where p_date >= 20160116 and p_date <= 20160127  and content_id in('4262')
+group by p_date, content_id
+
+
+
+select p_date, sum(case when p_product= 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product= 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160116 and p_date <= 20160127 and content_id in ('4262') and click_name = 'Play'
+group by p_date
+
+
+
+select p_date, content_id, sum(case when p_product = 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20150912 and p_date <= 20150129 and click_name = 'Play' and content_id in ('2400','2472','2558','2652','2796','2806','2872','2962','3060','3174','3210','3462','3470','3670','3674','3922','3932','4200','4202','4932')
+group by p_date, content_id
+
+
+
+select p_date, count(distinct id)
+from muce_topic.applicationstart
+where p_product = 'ANDROID_EYEPETIZER' and p_date >= 20160120 and p_date <= 20160130 and is_start_new = 1 and client_first_source = 'eyepetizer_yingyongbao_market'
+group by p_date
+
+
+select pp_date, sum(case when col_flag = 3 then col_num else 0 end), sum(case when col_flag = 1 or col_flag = 3 then col_num else 0 end)
+from (
+	select pp_date, col_flag, count(*) as col_num
+		from
+		(
+			select pp_date, id, sum(col_flag) as col_flag 
+			from 
+			( 
+					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
+						from muce_topic.applicationstart
+						where is_start_new = 1 and p_date >= 20160124 and p_date <= 20160129 and p_product = 'ANDROID_EYEPETIZER' and client_first_source = 'eyepetizer_zhihuiyun_market'
+					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
+				union all 
+					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
+						from muce_topic.applicationstart
+						where p_date >= 20160125 and p_date <= 20160130 and p_product = 'ANDROID_EYEPETIZER'
+					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
+			)ta 
+			group by pp_date, id
+		)tb
+	group by pp_date, col_flag )tc
+group by pp_date
+--android新用户次日活跃
+
+
+
+select p_date, sum(case when p_product= 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product= 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160125 and p_date <= 20160131 and content_id in ('4900')
+group by p_date
+
+
+select count(distinct case when p_product = 'IOS_EYEPETIZER' then id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_topic.applicationstart
+where p_date >= 20160101 and p_date <= 20160131
+
+
+
+
+
+select aaa, sum(uv_num), sum(play_id_num), sum(share_id_num), sum(fav_id_num) from ( select content_id as aaa, count(distinct id) as uv_num, '0' as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_app_client.showevent where p_product= 'IOS_EYEPETIZER' and p_date= 20160201 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id IN (4718,5198,4344,5202,5156) group by content_id union all select content_id as aaa, '0' as uv_num, count(distinct id) as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product='IOS_EYEPETIZER' and click_name='Play' and p_date= 20160201 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id IN (4718,5198,4344,5202,5156) group by content_id union all select case when content_id > 0 then content_id else substring(content_id, 10, length(content_id) - 10) end as aaa, '0' as uv_num, '0' as play_id_num, count(distinct id) as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') and p_date= 20160201 and p_hourmin >= 0000 and p_hourmin <= 1800 and (content_id like '%4718%' or content_id like '%5198%' or content_id like '%4344%' or content_id like '%5202%' or content_id like '%5156%') group by case when content_id > 0 then content_id else substring(content_id, 10, length(content_id) - 10) end union all select content_id as aaa, '0' as uv_num, '0' as play_id_num, '0' as share_id_num, count(distinct id) as fav_id_num from muce_app_client.clickevent where p_product = 'IOS_EYEPETIZER' and click_name = 'Favorite' and p_date= 20160201 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id IN (4718,5198,4344,5202,5156) group by content_id) a group by aaa --iOS 20160201
+
+
+
+select sum(case when p_product = 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_app_client.clickevent
+where p_date = 20160201 and click_name = 'Play'
+
+
+
+select p_date, count(distinct id)
+from muce_topic.click
+where p_date >= 20160125 and p_date <= 20160127 and p_product = 'IOS_EYEPETIZER' and click_name like 'FeedPageEventClick%'
+group by p_date
+
+
+select p_date, count(distinct id)
+from muce_topic.click
+
+
+
+select content_id, sum(uv_num), sum(play_id_num), sum(share_id_num), sum(fav_id_num) from ( select content_id, count(distinct id) as uv_num, '0' as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_topic.show where p_product= 'ANDROID_EYEPETIZER'  and p_date = 20160126 and content_id in (5112,4404,4386,4970,4488) group by content_id union all select content_id, '0' as uv_num, count(distinct id) as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_topic.click where p_product='ANDROID_EYEPETIZER'  and p_date = 20160126 and content_id in (5112,4404,4386,4970,4488) and click_name = 'Play' group by content_id union all select content_id, '0' as uv_num, '0' as play_id_num, count(distinct id) as share_id_num, '0' as fav_id_num from muce_topic.click where p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') and p_date = 20160126 and content_id in (5112,4404,4386,4970,4488) group by content_id union all        select content_id, '0' as uv_num, '0' as play_id_num, '0' as share_id_num, count(distinct id) as fav_id_num from muce_topic.click where p_product = 'ANDROID_EYEPETIZER' and click_name = 'Favorite' and p_date = 20160126 and content_id in (5112,4404,4386,4970,4488) group by content_id) a group by content_id --Android 20160126
+
+
+
+select p_date,
+	count(distinct case when p_product = 'IOS_EYEPETIZER' and click_name='Play' then id else null end),
+	sum(case when p_product = 'IOS_EYEPETIZER' and click_name = 'Play' then 1 else 0 end),
+	count(distinct case when p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then id else null end),
+	sum(case when p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160201 and p_date <= 20160201
+group by p_date
+--ios播放与分享用户人数
+
+
+
+select p_date,
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_name='Play' then id else null end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_name = 'Play' then 1 else 0 end),
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then id else null end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160201 and p_date <= 20160201
+group by p_date
+--android播放与分享用户人数
+
+
+
+select p_date, content_id, sum(case when p_product= 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product= 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160127 and p_date <= 20160201 and content_id in ('5134') and click_name = 'Play'
+group by p_date, content_id
+
+
+
+select p_date, sum(case when p_product = 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_event_client.consumptionevent
+where p_date >= 20160126 and p_date <= 20160201 and content_id > 0
+group by p_date
+
+
+
+
+select p_date,
+	count(distinct case when p_product = 'IOS_EYEPETIZER' and click_name='Play' then id else null end),
+	sum(case when p_product = 'IOS_EYEPETIZER' and click_name = 'Play' then 1 else 0 end),
+	count(distinct case when p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then id else null end),
+	sum(case when p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20151207 and p_date <= 20160131
+group by p_date
+--ios播放与分享用户人数
+
+
+
+
+select p_date,
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_name='Play' then id else null end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_name = 'Play' then 1 else 0 end),
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then id else null end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20151207 and p_date <= 20160131
+group by p_date
+--android播放与分享用户人数
+
+
+
+http://wandou.im/admin/admin-ajax.php?id=82842717&action=edit&keyword=1dblul&nonce=6b427bc188
+
+
+http://wandou.im/admin/admin-ajax.php?id=82842716&action=edit&keyword=1dbluk&nonce=5d40f5a20c
+
+
+http://wandou.im/admin/admin-ajax.php?action=edit_save&url=http%3A%2F%2Ft.wdjcdn.com%2Fupload%2Fsubscribe%2Feyepetizer%2Feyepetizer_postcard.pdf&nonce=855ed51533
+
+
+
+http://wandou.im/admin/index.php?s_search=183yjc&s_in=keyword&s_by=timestamp&s_order=desc&perpage=15&link_filter=more&link_limit=1&date_filter=between&date_first=1%2F13%2F2016&date_second=
+
+
+
+
+http://wandou.im/admin/admin-ajax.php?action=edit_save&url=http%3A%2F%2Ft.wdjcdn.com%2Fupload%2Fsubscribe%2Feyepetizer%2Feyepetizer_postcard.pdf&id=y497168819&keyword=1dc2xm&newkeyword=183yjc&title=eyepetizerpostcard&nonce=53da553d20
+
+
+http://t.wdjcdn.com/upload/subscribe/eyepetizer/eyepetizer_postcard.pdf
+
+
+
+
+
+http://wandou.im/admin/admin-ajax.php?action=edit_save&url=http%3a%2f%2ft.wdjcdn.com%2fupload%2fsubscribe%2feyepetizer%2feyepetizer_postcard.pdf
+&id=74087832&keyword=183yjc&newkeyword=183yjc&title=eyepetizerpostcard&nonce=5e6f71c9bf
+
+
+
+
+
+
+
+开眼是一个短视频平台，其微信公众账号的文章是围绕平台所发布的内容撰写的。2016-01-19 日，此条视频内容在开眼 App 以「谷歌迷你街景：全球最大的小人国」标题上线。开眼在微信上发布的内容始终迟于 App 内容发布，故文章于 2016-01-26 日发布与微信公众号。经团队调查，此文章内容完全为何夏阳个人所创作，涉及到的资料内容完全由个人完成查找和编撰，并无任何抄袭行为。
+
+
+
+
+
+
+C:\Windows\Fonts\FZLTHJW.TTF
+
+
+
+综合	12470941
+运动	9649531
+广告	9416197
+动画	7808864
+旅行	7665070
+创意	7576533
+剧情	7104345
+开胃	6867816
+音乐	6236541
+预告	4663753
+记录	3845967
+时尚	2176187
+
+
+预告	4663753	79	59034.8481
+时尚	2176187	37	58815.86486
+综合	12461585	232	53713.72845
+运动	9583224	182	52655.07692
+剧情	7104345	144	49335.72917
+创意	7521336	158	47603.39241
+广告	9416195	204	46157.81863
+开胃	6867816	149	46092.72483
+记录	3845966	88	43704.15909
+音乐	6236539	158	39471.76582
+动画	7807670	200	39038.35
+旅行	7665064	198	38712.44444
+
+
+
+select p_date, is_start_new, view_url, count(distinct id)
+from muce_topic.show
+where p_date = 20160213 and p_product = 'ANDROID_EYEPETIZER' and ((view_url like '%monthly%') or (view_url like '%historical%') or (view_url like '%weekly%'))
+group by p_date, is_start_new, view_url
+
+
+
+
+common/api/v3/ranklistnum=10&strategy=monthly/monthly
+
+common/api/v3/ranklistnum=10&strategy=historical/historical
+
+common/api/v3/ranklistnum=10&strategy=weekly/weekly
+
+
+
+select p_date, is_start_new, count(distinct id)
+from muce_topic.show
+where view_url like '%common/api/v3/ranklistnum=10&strategy=%' and p_date >= 20160207 and p_date <= 20160213 and p_product = 'ANDROID_EYEPETIZER'
+group by p_date, is_start_new
+
+
+
+select p_date, view_url, count(distinct id)
+from muce_topic.show
+where p_date >= 20160207 and p_date <= 20160213 and p_product = 'ANDROID_EYEPETIZER' and view_url in ('feed', 'category/grid')
+group by p_date, view_url
+
+
+%e5%b7%b2%e8%bd%ac%e7%a0%81%e8%a7%86%e9%a2%91
+
+
+
+http://sh189cloud001.oos-sh.ctyunapi.cn/c2a8b482-7440-4d22-ad65-5fb52819a399?response-content-type=video/mp4&Expires=1455601387&response-content-disposition=attachment%3Bfilename%3D%22BilibiliJJ.COM-%25E3%2580%2590%25E5%2593%2594%25E5%2593%25A9%25E5%2593%2594%25E5%2593%25A92015%25E6%258B%259C%25E5%25B9%25B4%25E7%25A5%25AD%25E3%2580%2591_3%25E3%2580%2581%25E6%25B4%258B.mp4%22&AWSAccessKeyId=fb9c2f0f68c98e38b0a3&Signature=3LUN1hqi4YfjTSEOS96jMZmIl1I%3D
+
+
+
+http://cn-sddz3-cu.acgvideo.com/vg2/b/3d/3109121-1.flv?expires=1455558300&ssig=yiIJ6HmPYdx8o9etc5zijQ&oi=1875775110&player=1&or=1021181711&rate=0
+http://cn-sddz3-cu.acgvideo.com/vg2/b/3d/3109121-1.mp4?expires=1455558300&ssig=Bp01m_k2KKc74JumWqwh7Q&oi=1875775107&player=1&internal=1&rate=0&or=1021181711
+
+
+http://cn-sddz3-cu.acgvideo.com/vg0/b/3a/3107647hd.mp4?expires=1455561000&ssig=Bb0y0lYT9dj2FRlzF5v7TQ&oi=1875775110&appkey=95acd7f6cc3392f3&or=1021181711&rate=0
+
+http://cn-tj1-cu.acgvideo.com/vg125/1/71/3109121hd.mp4?expires=1455561000&ssig=QDEUOySJ_fKrUg4SY71DUg&oi=1875775110&appkey=95acd7f6cc3392f3&or=1021181711&rate=0
+
+
+
+
+http://nm2189cloud.oos-nm2.ctyunapi.cn/c8eda154-4428-4476-a7dc-8d7dd7d099f7?response-content-type=video/mp4&Expires=1455593559&response-content-disposition=attachment%3Bfilename%3D%22BilibiliJJ.COM-%25E3%2580%2590%25E5%2593%2594%25E5%2593%25A9%25E5%2593%2594%25E5%2593%25A92016%25E6%258B%259C%25E5%25B9%25B4%25E7%25A5%25AD%25E3%2580%2591_%2528Av3521416%252CP1%2529%252820160210105641%2529.mp4%22&AWSAccessKeyId=879ff552c2446bad41c3&Signature=vYX9JQUNO3x9FMmKqW6auJ/6PvE%3D
+
+
+http://121.30.196.55/ws.acgvideo.com/7/0d/3109121-1.mp4?wsTime=1455558937&wsSecret2=254357a2c04eb78fb36181f9da4524b2&oi=2015061642&appkey=8e9fc618fbd41e28&or=2061576138&wshc_tag=0&wsts_tag=56c1d92f&wsid_tag=6fce0e8c&wsiphost=ipdbm
+
+
+00000018
+100.64.83.246 - Unknown [15/Feb/2016:22:06:43 +0800] "GET http://api.bilibili.com/view?_device=ipad&_hwid=47410b87fe9e32a2&_ulv=10000&access_key=a87499c1425f47ad4bb20f33659e4d2a&appkey=27eb53fc9058f8c3&appver=2710&batch=1&build=2710&check_area=1&id=1999286&platform=ios&type=json&sign=8f8900d6937beb14c7b08dfbbb537a37 HTTP/1.1" 200 1258 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:43 +0800] "GET http://api.bilibili.com/x/share/count?access_key=a87499c1425f47ad4bb20f33659e4d2a&actionKey=appkey&aid=1999286&appkey=27eb53fc9058f8c3&build=2710&device=pad&platform=ios&sign=13c87a348cbd06f7f38ef651c0849055&ts=1455545205 HTTP/1.1" 200 244 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:43 +0800] "GET http://api.bilibili.com/search_recommend?access_key=a87499c1425f47ad4bb20f33659e4d2a&actionKey=appkey&appkey=27eb53fc9058f8c3&build=2710&device=pad&main_ver=v3&platform=ios&playtag=1999286&recommend_type=related_post&rindex=1&sign=d524d649b3c809dc30a9f7e817df2bd9&ts=1455545205 HTTP/1.1" 200 6271 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:43 +0800] "CONNECT account.bilibili.com:443 HTTP/1.1" 200 0 "HTTPS" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:43 +0800] "GET http://api.bilibili.com/x/reply?_device=ipad&_hwid=47410b87fe9e32a2&_ulv=10000&access_key=a87499c1425f47ad4bb20f33659e4d2a&appkey=27eb53fc9058f8c3&appver=2710&build=2710&oid=1999286&platform=ios&pn=1&ps=10&sign=5c3f6960f07aca903b364fbaff6f2162&sort=0&type=1 HTTP/1.1" 200 2523 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:44 +0800] "GET http://api.bilibili.com/x/favourite/video/default?access_key=a87499c1425f47ad4bb20f33659e4d2a&actionKey=appkey&aid=1999286&appkey=27eb53fc9058f8c3&build=2710&device=pad&platform=ios&sign=fe9a44bb8e6539a8441290782e6234c8&ts=1455545206 HTTP/1.1" 200 257 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:46 +0800] "GET http://hearthstone.nos.netease.com/3/home/20151114/header_v2.mp4 HTTP/1.1" 200 166645 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:47 +0800] "GET http://message.bilibili.com/api/notify/query.notify.count.do?access_key=a87499c1425f47ad4bb20f33659e4d2a&actionKey=appkey&appkey=27eb53fc9058f8c3&build=2710&device=pad&platform=ios&sign=ae1fdf3bfa90cb4d42458e28fbfa7c81&ts=1455545205 HTTP/1.1" 200 467 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:48 +0800] "GET http://account.bilibili.com/api/myinfo?_device=ipad&_hwid=47410b87fe9e32a2&_ulv=10000&access_key=a87499c1425f47ad4bb20f33659e4d2a&appkey=27eb53fc9058f8c3&appver=2710&build=2710&platform=ios&type=json&sign=edca8f9ab2d00e6ed949bcd581a7611b HTTP/1.1" 200 808 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:48 +0800] "GET http://app.bilibili.com/bangumi/report_watch?access_key=a87499c1425f47ad4bb20f33659e4d2a&actionKey=appkey&appkey=27eb53fc9058f8c3&build=2710&cid=3109121&device=pad&platform=ios&sign=c32cf93d45679fd49a8ada7a3fb86ebc&ts=1455545206 HTTP/1.1" 200 833 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:48 +0800] "GET http://elec.bilibili.com/api/query.rank.do?access_key=a87499c1425f47ad4bb20f33659e4d2a&act=appkey&appkey=27eb53fc9058f8c3&mid=8047632&pay_mid=1543735&sign=9f5e00f499b18c1bf00b9abdef98fbf5&ts=1455545206&type=json HTTP/1.1" 200 315 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:48 +0800] "GET http://bangumi.bilibili.com/api/report_watch?access_key=a87499c1425f47ad4bb20f33659e4d2a&actionKey=appkey&appkey=27eb53fc9058f8c3&build=2710&cid=3109121&device=pad&platform=ios&sign=c32cf93d45679fd49a8ada7a3fb86ebc&ts=1455545206 HTTP/1.1" 200 402 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:49 +0800] "POST http://api.bilibili.com/x/history/add HTTP/1.1" 200 232 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:49 +0800] "GET http://api.bilibili.com/view?_device=ipad&_hwid=47410b87fe9e32a2&_ulv=10000&access_key=a87499c1425f47ad4bb20f33659e4d2a&appkey=27eb53fc9058f8c3&appver=2710&batch=1&build=2710&check_area=1&id=1999286&platform=ios&type=json&sign=8f8900d6937beb14c7b08dfbbb537a37 HTTP/1.1" 200 1258 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:49 +0800] "GET http://comment.bilibili.com/3109121.xml HTTP/1.1" 200 148739 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:06:53 +0800] "POST http://data.bilibili.com/vv/app HTTP/1.1" 200 400 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:07:00 +0800] "GET http://api.bilibili.com/view?_device=ipad&_hwid=47410b87fe9e32a2&_ulv=10000&access_key=a87499c1425f47ad4bb20f33659e4d2a&appkey=27eb53fc9058f8c3&appver=2710&batch=1&build=2710&check_area=1&id=1999286&platform=ios&type=json&sign=8f8900d6937beb14c7b08dfbbb537a37 HTTP/1.1" 200 1257 "HTTP" ""
+100.64.83.246 - Unknown [15/Feb/2016:22:07:01 +0800] "GET http://comment.bilibili.com/3109121.xml HTTP/1.1" 200 389 "HTTP" ""
+
+
+http://cn-sddz3-cu.acgvideo.com/vg0/b/3a/3107647hd.mp4?expires=1455561000&ssig=Bb0y0lYT9dj2FRlzF5v7TQ&oi=1875775110&appkey=95acd7f6cc3392f3&or=1021181711&rate=0
+
+
+
+http://60.5.255.7/ws.acgvideo.com/9/68/6174531-1hd.mp4?wsTime=1455563188&wsSecret2=4df547028f0c0cb2c7ca4fa55f32dd1f&oi=1875775110&appkey=95acd7f6cc3392f3&or=1021181711&wshc_tag=1&wsts_tag=56c1e974&wsid_tag=6fce0e8c&wsiphost=ipdbm
+
+
+
+download: "http://interface.bilibili.com/playurl?platform=bilihelper&otype=json&appkey=95acd7f6cc3392f3&cid=6018734&quality=4&type=dlquality
+				playback: "http://interface.bilibili.com/playurl?platform=bilihelper&otype=json&appkey=95acd7f6cc3392f3&cid=" + request.cid + "&quality=4&type=mp4"
+			};
+
+
+http://interface.bilibili.com/playurl?platform=bilihelper&otype=json&appkey=95acd7f6cc3392f3&cid=6018734&quality=3&type=mp4'"
+
+
+select view_url, click_name
+from muce_topic.click
+where p_date = 20160215 and p_product = 'ANDROID_EYEPETIZER' and view_url like '%common/api/v1/searchquery%'
+
+
+
+
+cabac=1 / ref=6 / deblock=1:-1:-1 / analyse=0x3:0x133 / me=umh / subme=10 / psy=1 / psy_rd=1.00:0.15 / mixed_ref=1 / me_range=16 / chroma_me=1 / trellis=2 / 8x8dct=1 / cqm=0 / deadzone=21,11 / fast_pskip=1 / chroma_qp_offset=-3 / threads=22 / lookahead_threads=2 / sliced_threads=0 / nr=0 / decimate=1 / interlaced=0 / bluray_compat=0 / constrained_intra=0 / bframes=4 / b_pyramid=2 / b_adapt=2 / b_bias=0 / direct=3 / weightb=1 / open_gop=0 / weightp=2 / keyint=240 / keyint_min=24 / scenecut=40 / intra_refresh=0 / rc_lookahead=240 / rc=abr / mbtree=1 / bitrate=1500 / ratetol=1.0 / qcomp=0.50 / qpmin=0 / qpmax=38 / qpstep=4 / vbv_maxrate=3000 / vbv_bufsize=6000 / nal_hrd=none / filler=0 / ip_ratio=1.40 / aq=2:1.00
+
+
+
+cabac=1 / ref=6 / deblock=1:-1:-1 / analyse=0x3:0x133 / me=umh / subme=10 / psy=1 / psy_rd=1.00:0.15 / mixed_ref=1 / me_range=16 / chroma_me=1 / trellis=2 / 8x8dct=1 / cqm=0 / deadzone=21,11 / fast_pskip=1 / chroma_qp_offset=-3 / threads=72 / lookahead_threads=4 / sliced_threads=0 / nr=0 / decimate=1 / interlaced=0 / bluray_compat=0 / constrained_intra=0 / bframes=4 / b_pyramid=2 / b_adapt=2 / b_bias=0 / direct=3 / weightb=1 / open_gop=0 / weightp=2 / keyint=240 / keyint_min=24 / scenecut=40 / intra_refresh=0 / rc_lookahead=240 / rc=abr / mbtree=1 / bitrate=1228 / ratetol=1.0 / qcomp=0.50 / qpmin=0 / qpmax=38 / qpstep=4 / vbv_maxrate=4915 / vbv_bufsize=9830 / nal_hrd=none / filler=0 / ip_ratio=1.40 / aq=2:1.00
+
+
+cabac=1 / ref=3 / deblock=1:1:1 / analyse=0x3:0x133 / me=umh / subme=10 / psy=1 / fade_compensate=0.00 / psy_rd=0.30:0.00 / mixed_ref=1 / me_range=24 / chroma_me=1 / trellis=2 / 8x8dct=1 / cqm=0 / deadzone=21,11 / fast_pskip=1 / chroma_qp_offset=-2 / threads=12 / lookahead_threads=2 / sliced_threads=0 / nr=0 / decimate=1 / interlaced=0 / bluray_compat=0 / constrained_intra=0 / fgo=0 / bframes=3 / b_pyramid=2 / b_adapt=2 / b_bias=0 / direct=3 / weightb=1 / open_gop=0 / weightp=2 / keyint=250 / keyint_min=1 / scenecut=60 / intra_refresh=0 / rc_lookahead=60 / rc=crf / mbtree=1 / crf=23.5000 / qcomp=0.50 / qpmin=0 / qpmax=69 / qpstep=4 / ip_ratio=1.40 / aq=2:0.80
+
+
+
+电视剧
+电影
+综艺
+动漫
+音乐
+教育
+纪录片
+资讯
+娱乐
+体育
+汽车
+科技
+游戏
+生活
+时尚
+旅游
+亲子
+搞笑
+微电影
+网剧
+拍客
+创意视频
+自拍
+广告
+
+
+@三色堇吴幼坚 是中国首位公开支持同性恋子女的母亲，从事 LGBT 公益事业十余年，深知爱情多元且平等。分享本视频至朋友圈，魅蓝 metal 等你拿。详情发送“为爱勇敢”至微信号：开眼Eyepetizer From @魅蓝手机
+
+男同
+
+
+楼下提到HIV，因为工作关系接触过。「同性恋中HIV携带者多」虽是事实但这只是统计学上的概念，其中有更深层次的原因。就像治理交通事故虽会「禁止酒驾」但不会去禁酒一样，防治艾滋主要在阻止疾病传播而不是禁止同性恋上。
+
+
+
+select pp_date, sum(case when col_flag = 1 then col_num else 0 end), sum(case when col_flag = 2 then col_num else 0 end), sum(case when col_flag = 3 then col_num else 0 end)
+from (
+	select pp_date, col_flag, count(*) as col_num
+		from
+		(
+			select pp_date, id, sum(col_flag) as col_flag 
+			from 
+			( 
+					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
+						from muce_topic.applicationstart
+						where is_start_new = 1 and p_date >= 20160130 and p_date <= 20160216 and p_product = 'ANDROID_EYEPETIZER' and client_first_source = 'eyepetizer_baidu_market'
+					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
+				union all 
+					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
+						from muce_topic.applicationstart
+						where p_date >= 20160131 and p_date <= 20160217 and p_product = 'ANDROID_EYEPETIZER'
+					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
+			)ta 
+			group by pp_date, id
+		)tb
+	group by pp_date, col_flag )tc
+group by pp_date
+--Android新用户次日活跃
+
+
+开眼鼓励大家对影片发表不同的观点意见，但拒绝任何对人不友好的揶揄谩骂。评论不是对他人发泄不理智言语的渠道，而是能够让彼此交换对影片不同见解的地方。如果你喜欢一条影片，请留下对他人有价值的评论，如果不喜欢，为什么不看看下一条呢？
+
+
+http://www.wandoujia.com/eyepetizer/list.html?utm_campaign=routine&utm_medium=weixin&utm_source=weixin-menu
+
+
+utm_source=listpage
+utm_medium=internal
+utm_campaign=web
+
+
+
+
+eyepetizer_xiaomi_ad
+
+eyepetizer_yingyongbao_market
+
+
+
+
+
+select distinct id
+from muce_topic.click
+where p_date >= 20160218 and p_date <= 20160221 and content_id like '%5350%' and (p_product = 'IOS_EYEPETIZER' or p_product = 'ANDROID_EYEPETIZER') and click_action = 'SHARE' and click_name in ('Moment')
+
+
+
+1、开眼在半年多的时间中，以口碑传播的方式获取了数百万用户；
+2、平均每个用户每天会播放 3 条左右的视频；
+3、平均每个用户会花 20min 左右来看开眼视频；
+4、好的视频，会有高达 80%+ 的播放率（播放视频的人数/看到视频的人数）；
+5、在看了视频的人中，平均近 15% 的人会分享至各类社交网络，这是开眼最主要的新用户来源。
+
+
+
+
+select p_date, count(*)
+from muce_topic.click
+where p_product= 'ANDROID_EYEPETIZER' and p_date = 20151001 and content_id = 5418 and click_name = 'Play'
+group by p_date
+
+
+1、开眼在半年多的时间中，以口碑传播的方式获取了数百万级的用户；
+2、平均每个用户每天会播放 3 条左右的视频；
+3、平均每个用户会花 20min 左右来看开眼视频；
+4、好的视频，会有高达 80%+ 的播放率（播放视频的人数/看到视频的人数）；
+5、在看了视频的人中，平均近 15% 的人会分享至各类社交网络，这是开眼最主要的新用户来源。
+
+
+
+select p_date, client_version_name, count(*)
+from muce_topic.click
+where p_product= 'ANDROID_EYEPETIZER' and p_date >= 20160220 and p_date <= 20160221 and content_id = 5418 and click_name = 'Play' and 
+group by p_date, client_version_name
+
+
+1、在调查问卷和各市场的评分中，超出 90% 的用户对开眼的设计和内容给出了好评；
+2、平均每个用户每天会播放 3 条左右的视频；
+3、会花 20min 左右来看开眼视频；
+4、在看了视频的人中，平均近 15% 的人会分享至各类社交网络，这是开眼最主要的新用户来源；
+5、开眼在近半年多的时间中，以社交网络上口碑传播的方式获取了数百万用户。
+
+
+
+
+select p_date, sum(case when p_product = 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.show
+where p_date >= 20160210 and p_date <= 20160220  and content_id in ('4884','4902','4940','4882','4534','4216','4776','4790','4828','3712','5182','4264','4514','3334','3964','5272','5280','3578','4922','3672','4822','4330','2946','4580','4878','5200','5296','5154','4692','4864','3276','4658','4784','4746','4318','4468','5300','5298','5302','5158','5312','4780','4966','3676','3194','4994','5336','4952','4968','4316','5226','5374','5360','5256','5350','4956','4958','5416','5346','4838','4618','4998','5444','5006','5426')
+group by p_date
+
+
+
+select id, p_product
+from muce_topic.click
+where p_date >= 20160218 and p_date <= 20160221 and id in ('eb21072e3600416895fd1c899206b1204925163f','365a9ba0910c45cda12f7468a17d096b0a135f40','c190854c6ee94c06a6333248678c712f3e3974c9')
+
+
+select count(distinct case when p_product = 'IOS_EYEPETIZER' then id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_topic.click
+where p_date >= 20160218 and p_date <= 20160220 and content_id like '%5350%' and click_action = 'SHARE' and click_name in ('Moment')
+
+
+
+0b4627f7256f420da88f2286391511e312599e6d
+5e423d0cd7e659b02cdf094052ceb798b5d65794
+cdd601a3fa1b150b840968e3a08f1259ec8991ea
+
+
+很多人有「小李子总被提名却从不获奖」的印象，但实际他的奥斯卡男主角提名只有4次，其余都是我们的错觉。我们经常把自己的付出过度放大，把所得又过渡缩小，以此投影出来的就是那个想象中总被奥斯卡提名的小李子，是真实世界里那个怀才不遇的自己：「我做得比谁都好，为什么总是别人加薪？」。小金人是迟来的认可，就好比一家公司奋斗20年终于IPO一样实至名归，令人欣慰。而相比小李子摄影师罗杰·狄金斯提名13次，混音师凯文·奥康奈尔提名20次，但他们对职业的坚持一直如同《老人与海》中的老人，连续几十天没打到一条鱼，斗志却丝毫不减——
+「今天我一定会打条大鱼！」这绝对是对信仰的考验。
+
+
+脱离初心去追寻一个虚无的目标，犹如竹篮打捞水中月，最终只会得而复失。但你说盖茨比追逐爱情，没有得到黛西就是徒劳吗？不，他获得了身份和地位。你说小李子没拿小金人就不是好演员了吗？不，他的演出打动了无数人。你说创业公司没有 IPO 就不是好公司了吗？不，我们的产品抚慰了千万求知的灵魂。
+
+小金人算个蛋！
+
+别看他今天手上拿着什么，要看他过去 20 年都演过什么，又演成了什么样。
+
+
+
+
+
+影片中的情节是对智利「皮诺切特」统治时期的隐喻，他在美国支持下于1973年通过流血政变建立右翼军政府，统治了智利长达16年，是迄今为止任期最长的智利总统。IMDB上也有一个人回复，大意是说虽然没看过导演的采访，但我是一名智利人，经历过皮诺切特时期，真的非常可怕。熊的一家可能经历了相同的命运。导演加布里埃尔发表获奖感言非常动情「感谢我的祖父，他给了这部影片创意。我们真心希望电影里面这样的问题不要再发生。我们来自一个叫做智利的小国家，这是智利拿的第一座奥斯卡奖。」当下也即将成为历史，在发生的下一秒。在历史还能回望的今天，动画用了它最美的壳去讲述了一个真实的故事。这也许就是动画特有的魅力和力量。
+
+
+select content_id, sum(uv_num), sum(play_id_num), sum(share_id_num), sum(fav_id_num) from ( select content_id, count(distinct id) as uv_num, '0' as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_app_client.showevent where p_product= 'ANDROID_EYEPETIZER'  and p_date = 20160209 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id in (4920,4742,3804,3946,3668) group by content_id union all select content_id, '0' as uv_num, count(distinct id) as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product='ANDROID_EYEPETIZER'  and p_date = 20160209 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id in (4920,4742,3804,3946,3668) and click_name = 'Play' group by content_id union all select content_id, '0' as uv_num, '0' as play_id_num, count(distinct id) as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') and p_date = 20160209 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id in (4920,4742,3804,3946,3668) group by content_id union all select content_id, '0' as uv_num, '0' as play_id_num, '0' as share_id_num, count(distinct id) as fav_id_num from muce_app_client.clickevent where p_product = 'ANDROID_EYEPETIZER' and click_name = 'Favorite' and p_date = 20160209 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id in (4920,4742,3804,3946,3668) group by content_id) a group by content_id --Android 20160209
+
+
+select id, p_date, content_id
+from muce_topic.click
+where p_date = 20160216 and click_name = 'Play' and id = 'eb21072e3600416895fd1c899206b1204925163f' and p_product = 'ANDROID_EYEPETIZER'
+group by id, p_date, content_id
+
+
+select id, p_date, content_id
+from muce_topic.click
+where p_date = 20160229 and click_action = 'SHARE' and id = '0c51615882da4ed981df1a7af6330edd073dd988' and p_product = 'ANDROID_EYEPETIZER'
+group by id, p_date, content_id
+
+
+select id, p_date, content_id
+from muce_topic.click
+where p_date = 20160226 and click_name = 'Favorite' and id = '0aba5886515d41a3928e14223631d19e24d77fe9' and p_product = 'ANDROID_EYEPETIZER'
+group by id, p_date, content_id
+
+
+
+
+
+select count(*)
+from muce_topic.click
+where p_date >= 20151024 and p_date <= 20151224 and p_product in ('IOS_EYEPETIZER','ANDROID_EYEPETIZER') and content_id = '2962'
+
+select count(*)
+from muce_topic.click
+where p_date >= 20151225 and p_date <= 20160229 and p_product in ('IOS_EYEPETIZER','ANDROID_EYEPETIZER') and content_id = '2962'
+
+
+
+新的登录
+保存站提封面
+自动缓存
+
+
+select p_date, content_id, sum(case when p_product = 'IOS_EYEPETIZER' then 1 else 0 end), sum(case when p_product = 'ANDROID_EYEPETIZER' then 1 else 0 end)
+from muce_topic.click
+where p_date >= 20160201 and p_date <= 20160301 and click_name = 'Play' and content_id in ('5156','5158','5188','5164')
+group by p_date, content_id
+
+
+
+
+select p_date,
+	count(distinct case when p_product = 'IOS_EYEPETIZER' and click_name='Play' then id else null end),
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_name = 'Play' then id else null end),
+	count(distinct case when p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then id else null end),
+	count(distinct case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then id else null end)
+from muce_app_client.clickevent
+where p_date = 20160302
+group by p_date
+--播放与分享用户人数
+
+
+
+select p_date,
+	sum(case when p_product = 'IOS_EYEPETIZER' and click_name='Play' then 1 else 0 end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_name = 'Play' then 1 else 0 end),
+	sum(case when p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') then 1 else 0 end),
+	sum(case when p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') then 1 else 0 end)
+from muce_app_client.clickevent
+where p_date = 20160302
+group by p_date
+--播放与分享次数
+
+
+select aaa, sum(uv_num), sum(play_id_num), sum(share_id_num), sum(fav_id_num) from ( select content_id as aaa, count(*) as uv_num, '0' as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_app_client.showevent where p_product= 'IOS_EYEPETIZER' and p_date= 20160302 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id IN (3844,3986,4724,5368,5782) group by content_id union all select content_id as aaa, '0' as uv_num, count(*) as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product='IOS_EYEPETIZER' and click_name='Play' and p_date= 20160302 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id IN (3844,3986,4724,5368,5782) group by content_id union all select case when content_id > 0 then content_id else substring(content_id, 10, length(content_id) - 10) end as aaa, '0' as uv_num, '0' as play_id_num, count(*) as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product = 'IOS_EYEPETIZER' and click_action = 'SHARE' and click_name in ('ShareCoverMoment','ShareCoverWeibo','Facebook','ShareCoverQQ','Weibc','More','Moment','ShareCoverWechat','Weibo','ShareCoverTwitter','Twitter','ShareCoverFacebook','Wechat','Link','ShareCoverMore','QQ','ShareCoverWeibc') and p_date= 20160302 and p_hourmin >= 0000 and p_hourmin <= 1800 and (content_id like '%3844%' or content_id like '%3986%' or content_id like '%4724%' or content_id like '%5368%' or content_id like '%5782%') group by case when content_id > 0 then content_id else substring(content_id, 10, length(content_id) - 10) end union all select content_id as aaa, '0' as uv_num, '0' as play_id_num, '0' as share_id_num, count(*) as fav_id_num from muce_app_client.clickevent where p_product = 'IOS_EYEPETIZER' and click_name = 'Favorite' and p_date= 20160302 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id IN (3844,3986,4724,5368,5782) group by content_id) a group by aaa --iOS 20160302
+
+
+
+select content_id, sum(uv_num), sum(play_id_num), sum(share_id_num), sum(fav_id_num) from ( select content_id, count(*) as uv_num, '0' as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_app_client.showevent where p_product= 'ANDROID_EYEPETIZER'  and p_date = 20160302 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id in (3844,3986,4724,5368,5782) group by content_id union all select content_id, '0' as uv_num, count(*) as play_id_num, '0' as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product='ANDROID_EYEPETIZER'  and p_date = 20160302 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id in (3844,3986,4724,5368,5782) and click_name = 'Play' group by content_id union all select content_id, '0' as uv_num, '0' as play_id_num, count(*) as share_id_num, '0' as fav_id_num from muce_app_client.clickevent where p_product = 'ANDROID_EYEPETIZER' and click_action = 'SHARE' and click_name in ('Moment','Wechat','QQ','Weibo','SystemShare') and p_date = 20160302 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id in (3844,3986,4724,5368,5782) group by content_id union all select content_id, '0' as uv_num, '0' as play_id_num, '0' as share_id_num, count(*) as fav_id_num from muce_app_client.clickevent where p_product = 'ANDROID_EYEPETIZER' and click_name = 'Favorite' and p_date = 20160302 and p_hourmin >= 0000 and p_hourmin <= 1800 and content_id in (3844,3986,4724,5368,5782) group by content_id) a group by content_id --Android 20160302
+
+
+
+136****8656
+185****5578
+176****0276
+157****3892
+138****9110
+189****6530
+137****8640
+182****3428
+186****6141
+136****7730
+137****1780
+151****7995
+138****3965
+182****9467
+186****0058
+135****2910
+130****7007
+131****8505
+134****2858
+
+
+select pp_date, sum(case when col_flag = 1 then col_num else 0 end), sum(case when col_flag = 2 then col_num else 0 end), sum(case when col_flag = 3 then col_num else 0 end)
+from (
+	select pp_date, col_flag, count(*) as col_num
+		from
+		(
+			select pp_date, id, sum(col_flag) as col_flag 
+			from 
+			( 
+					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
+						from muce_topic.applicationstart
+						where is_start_new = 1 and p_date >= 20160131 and p_date <= 20160301 and p_product = 'IOS_EYEPETIZER'
+					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
+				union all 
+					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
+						from muce_topic.applicationstart
+						where p_date >= 20160201 and p_date <= 20160302 and p_product = 'IOS_EYEPETIZER'
+					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
+			)ta 
+			group by pp_date, id
+		)tb
+	group by pp_date, col_flag )tc
+group by pp_date
+--iOS新用户次日活跃
+
+select pp_date, sum(case when col_flag = 1 then col_num else 0 end), sum(case when col_flag = 2 then col_num else 0 end), sum(case when col_flag = 3 then col_num else 0 end)
+from (
+	select pp_date, col_flag, count(*) as col_num
+		from
+		(
+			select pp_date, id, sum(col_flag) as col_flag 
+			from 
+			( 
+					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
+						from muce_topic.applicationstart
+						where is_start_new = 1 and p_date >= 20160217 and p_date <= 20160301 and p_product = 'ANDROID_EYEPETIZER' and client_first_source = 'eyepetizer_baidu_market'
+					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
+				union all 
+					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1) as pp_date, id, 2 as col_flag 
+						from muce_topic.applicationstart
+						where p_date >= 20160218 and p_date <= 20160302 and p_product = 'ANDROID_EYEPETIZER'
+					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 1), id
+			)ta 
+			group by pp_date, id
+		)tb
+	group by pp_date, col_flag )tc
+group by pp_date
+--baidu_Android新用户次日活跃
+
+
+
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160102 and p_date <= 20160108
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160109 and p_date <= 20160115
+		group by id) a
+	group by id) b
+--iOS_1_1
+
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160102 and p_date <= 20160108
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160116 and p_date <= 20160122
+		group by id) a
+	group by id) b
+--iOS_1_2
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160102 and p_date <= 20160108
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160123 and p_date <= 20160129
+		group by id) a
+	group by id) b
+--iOS_1_3
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160102 and p_date <= 20160108
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160202 and p_date <= 20160212
+		group by id) a
+	group by id) b
+--iOS_1_4
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160102 and p_date <= 20160108
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160130 and p_date <= 20160205
+		group by id) a
+	group by id) b
+--iOS_1_5
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160102 and p_date <= 20160108
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160206 and p_date <= 20160212
+		group by id) a
+	group by id) b
+--iOS_1_6
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160109 and p_date <= 20160115
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160116 and p_date <= 20160122
+		group by id) a
+	group by id) b
+--iOS_2_1
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160109 and p_date <= 20160115
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160123 and p_date <= 20160129
+		group by id) a
+	group by id) b
+--iOS_2_2
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160109 and p_date <= 20160115
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160202 and p_date <= 20160212
+		group by id) a
+	group by id) b
+--iOS_2_3
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160109 and p_date <= 20160115
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160130 and p_date <= 20160205
+		group by id) a
+	group by id) b
+--iOS_2_4
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160109 and p_date <= 20160115
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160206 and p_date <= 20160212
+		group by id) a
+	group by id) b
+--iOS_2_5
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160109 and p_date <= 20160115
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160213 and p_date <= 20160219
+		group by id) a
+	group by id) b
+--iOS_2_6
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160123 and p_date <= 20160129
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160202 and p_date <= 20160212
+		group by id) a
+	group by id) b
+--iOS_3_1
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160123 and p_date <= 20160129
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160130 and p_date <= 20160205
+		group by id) a
+	group by id) b
+--iOS_3_2
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160123 and p_date <= 20160129
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160206 and p_date <= 20160212
+		group by id) a
+	group by id) b
+--iOS_3_3
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160123 and p_date <= 20160129
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160213 and p_date <= 20160219
+		group by id) a
+	group by id) b
+--iOS_3_4
+
+select sum(case when flag_2 = 1 then 1 else 0 end), sum(case when flag_2 = 2 then 1 else 0 end), sum(case when flag_2 = 3 then 1 else 0 end)
+from (
+	select id, sum(flag) as flag_2
+	from (
+		select id, 1 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and is_start_new = 1 and p_date >= 20160123 and p_date <= 20160129
+		group by id
+	union all
+		select id, 2 as flag
+		from muce_topic.applicationstart
+		where p_product='ANDROID_EYEPETIZER' and p_date >= 20160220 and p_date <= 20160226
+		group by id) a
+	group by id) b
+--iOS_3_5
+
+
+
+
+select view_url, from_page_url, count(*)
+from muce_topic.show
+where p_date = 20160303 and p_product = 'IOS_EYEPETIZER'
+group by view_url, from_page_url
+
+
+
+eventListener.setLogging(cover,
+       EyepetizerLogger.Module.UI,
+       ViewLogPackage.Element.BUTTON,
+       ViewLogPackage.Action.OPEN,
+       startPageAd.getActionUrl(),
+       (long) startPageAd.getVersion());
+
+
+
+       startPageAd.getActionUrl() 是 viewname
+
+
+select *
+from muce_topic.show
+where view_name = 'startPageAd' and p_product = 'ANDROID_EYEPETIZER' and p_date = ''
+limit 1000
+
+
+
+
+
+select p_date, count()
+
+
+http://www.wandoujia.com/eyepetizer/collection.html?name=2016astronomicalwonders&utm_campaign=special&utm_medium=eyepetizer-app&utm_source=inapp-banner&ineyepetizerapp=true
+
+
+http://www.wandoujia.com/eyepetizer/collection.html?name=2016astronomicalwonders&utm_campaign=routine&utm_medium=ios-share&utm_source=wechat-friends
+
+android 1.11 
+
+
+
+final ContentPackage.Builder contentBuilder = new ContentPackage.Builder();
+   contentBuilder
+       .identity(videoModel == null ? "unknown" : String.valueOf(videoModel.getModelId()))
+       .parent_id(String.valueOf(parentId))
+       .title(videoModel == null ? "unknown" : videoModel.getTitle());
+
+   final TimingPackage.Builder timingBuilder = new TimingPackage.Builder();
+   timingBuilder.start(sectionStartTime)
+       .end(current).duration(coast);
+
+   ExtraPackage.Builder extraBuilder = new ExtraPackage.Builder();
+   extraBuilder.content_package(contentBuilder.build())
+       .timing_package(timingBuilder.build());
+
+   TaskEvent.Builder taskBuilder = new TaskEvent.Builder();
+   taskBuilder.action(TaskEvent.Action.PLAY)
+       .status(TaskEvent.Status.END)
+       .result(TaskEvent.Result.SUCCESS).result_info("timing1");
+
+   LogManager.getLogger().logTaskEvent(taskBuilder, extraBuilder);
+
+
+select sum(case when timing_duration > 0 and timing_duration <= 5000 then 1 else 0 end), sum(case when timing_duration > 5000 and timing_duration <= 30000 then 1 else 0 end), sum(case when timing_duration > 30000 then 1 else 0 end)
+from muce_app_client.taskevent
+where p_date = 20160306 and p_product = 'ANDROID_EYEPETIZER' and task_action = 'PLAY' and task_result_info = 'timing1'
+
+
+
+select id, account_uid, timing_start,  timing_duration, task_action, task_result, task_result_info, task_status
+from muce_app_client.taskevent
+where p_date = 20160306 and p_product = 'ANDROID_EYEPETIZER'
+limit 10000
+
+
+select timing_duration
+from muce_app_client.taskevent
+where p_date = 20160306 and p_product = 'ANDROID_EYEPETIZER' and task_action = 'PLAY' and task_result_info = 'timing1'
+
+
+
+d16471901a064edd9fde48652a855ef0b5ce67c2'
+'052dee8c2a5c4eb8a8c24e3ea8ed5eae8139ea30','ff4f340d2044428ca70b7966870200e24da0f0e1','54aebc8fcf6e4ebb8e381a4cb7466536699b8acc','934b21454cc04aa0885a014cae33a6f716991428','9265b8ce89a84284995dbea19f9aca295506841c','5036a90796264e679d672498bf361f1b42fa3b21','3aa655e1e52a4adf9ab65dbd0731dba6c1b8da23'
+'7bf3dfd754a343b9bc67944e16efa322a3ee5b00
+
+
+
+	
+select p_date, count(distinct id)
+from muce_topic.click
+where p_date >= 20160222 and p_date <= 20160306 and is_start_new = 1 and client_first_source = 'eyepetizer_yingyongbao_market'
+group by p_date
+
+
+
+select count(distinct id)
+from muce_topic.applicationstart
+where p_date >= 20160201 and p_date <= 20160306 and p_product = 'ANDROID_EYEPETIZER'
+
+
+
+
+select a.id
+from (
+	select id
+	from muce_topic.applicationstart
+	where p_date >= 20160201 and p_date <= 20160306 and p_product = 'IOS_EYEPETIZER'
+	group by id) a
+left outer join (
+	select id
+	from muce_app_client.applicationstartevent
+	where p_date >= 20160305 and p_date <= 20160307 and p_product = 'IOS_EYEPETIZER'
+	group by id) b
+on a.id = b.id
+where b.id is null
+
+
+http://www.wandoujia.com/eyepetizer/collection.html?name=2016astronomicalwonders&ineyepetizerapp=true&utm_campaign=routine&utm_medium=push&utm_source=android_eyepetizer
+
+
+
+
+select click_name, count(*)
+from muce_topic.click
+where p_date >= 20160301 and p_date <= 20160307 and click_name in ('创意','运动','旅行','剧情','动画','广告','音乐','开胃','预告','综合','记录','时尚') and p_product = 'IOS_EYEPETIZER'
+group by click_name
+
+
+http://www.wandoujia.com/eyepetizer/collection.html?name=2016astronomicalwonders&utm_campaign=routine&utm_medium=share&utm_source=link
+
+
+select click_url, click_name, count(*)
+from muce_topic.click
+where p_date = 20160308 and p_product = 'ANDROID_EYEPETIZER'
+group by click_url
+
+\%E5\%BC\%80\%E8\%83\%83
+
+
+
+/rankList/videolist?categoryname=%E5%BC%80%E8%83%83&rank=date&type=category
+
+%E5%BC%80%E8%83%83
+
+创意	%\%E5\%88\%9B\%E6\%84\%8F%
+运动	%\%E8\%BF\%90\%E5\%8A\%A8%
+旅行	%\%E6\%97\%85\%E8\%A1\%8C%
+剧情	%\%E5\%89\%A7\%E6\%83\%85%
+动画	%\%E5\%8A\%A8\%E7\%94\%BB%
+广告	%\%E5\%B9\%BF\%E5\%91\%8A%
+音乐	%\%E9\%9F\%B3\%E4\%B9\%90%
+开胃	%\%E5\%BC\%80\%E8\%83\%83%
+预告	%\%E9\%A2\%84\%E5\%91\%8A%
+综合	%\%E7\%BB\%BC\%E5\%90\%88%
+记录	%\%E8\%AE\%B0\%E5\%BD\%95%
+时尚	%\%E6\%97\%B6\%E5\%B0\%9A%
+
+select click_name, count(*)
+from muce_topic.click
+where p_date >= 20160301 and p_date <= 20160307 and p_product = 'IOS_EYEPETIZER' and click_name in ('创意','运动','旅行','剧情','动画','广告','音乐','开胃','预告','综合','记录','时尚')
+group by click_name
+
+
+
+select p_date, click_url, click_name, count(*)
+from muce_topic.click
+where p_date >= 20160301 and p_date <= 20160307 and click_url like 'common/api/v3/videoscategoryName%' and click_url like '%date' and click_url not like 'SwitchTab%'
+group by p_date, click_url, click_name
+
+
+select p_date, click
+
+\N
+ViewCache
+SwitchTab_2
+SwitchTab_0
+ViewFavorites
+SwitchTab_1
+ViewReply
+ViewFeeback
+Play
+
+
+
+select p_date, click_name, count(*)
+from muce_topic.click
+where p_date = 20160308 and p_product = 'IOS_EYEPETIZER' and click_url = '/videolist?type=feed' and click_name not in (null, 'ViewCache', 'SwitchTab_2', 'SwitchTab_0', 'ViewFavorites', 'SwitchTab_1', 'ViewReply', 'ViewFeeback', 'Play', 'Feed')
+group by p_date, click_name
+
+
+
+select p_date, click_name, count(*)
+from muce_topic.click
+where p_date = 20160308 and p_product = 'ANDROID_EYEPETIZER' and click_url = 'feed' and click_name not in (null, 'ViewCache', 'SwitchTab_2', 'SwitchTab_0', 'ViewFavorites', 'SwitchTab_1', 'ViewReply', 'ViewFeeback', 'Play', 'Feed')
+group by p_date, click_name
+
+
+http://www.wandoujia.com/eyepetizer/collection.html?name=2016astronomicalwonders&utm_campaign=cooperation&utm_medium=tencent_qq_browser&utm_source=life_channel
+
+http://www.wandoujia.com/eyepetizer/detail.html?vid=578&utm_campaign=cooperation&utm_medium=tencent_qq_browser&utm_source=life_channel
+
+
+福利一：「洪金宝经典电影回顾展」影展开幕式（洪金宝、吴京亲临现场）＋「鬼打鬼」影片放映\n名额：20 位\n时间：3月15日晚 19:00 - 21:00\n\n福利二：电影沙龙\n名额：40 位\n活动嘉宾：洪金宝、吴京\n沙龙主题：「华语动作片的“英雄”与“时势”」，洪金宝、吴京“英雄见英雄”，听他们聊聊动作演员的那些事～\n时间：3月15日晚 19:30 - 21:10\n\n福利三：原汁原味「洪金宝经典电影回顾展」以下场次观影票\n名额：50 位（每场 10 张，每人限 1 张）\n3 月 19 日    19:45    「败家仔」\n3 月 20 日    13:00    「奇思妙想五福星」\n3 月 20 日    15:00    「快餐车」\n3 月 26 日    13:00    「七小福」\n3 月 26 日    20:00    「提防小手」\n*最终排片以资料馆放映时间为准，如有任何调整，我们将在第一时间通知大家。\n\n以上全部活动地点：中国电影资料馆小西天艺术影院（北京市海淀区文慧园路3号）\n\n如何参与？\n3.11-3.12 在开眼客户端的「我要投稿」中，填写你想要的福利数+姓名+手机号码+邮寄地址（福利三请明确具体电影名）。每人可报名多项，我们将从所有报名的朋友中随机抽取～\n报名样例：福利一+福利三七小福+姓名+手机号+邮寄地址\n\n我们将在 3 月 14 日向成功领取福利的朋友发出获奖“手机短信”通知。\n\n如何领取？\n1 福利一：将由主办方直接联系安排入场。\n2 福利二、福利三：主办方邮寄实体票（资料馆临时修改，开眼将逐一联系未留邮寄地址的朋友们）\n
+
+
+
+select p_date, count(distinct id)
+from muce_topic.applicationstart
+where p_date >= 20160307 and p_date <= 20160310 and p_product = 'IOS_EYEPETIZER'
+group by p_date
+
+
+select device_os_version, device_model
+from muce_topic.applicationactive
+where p_date = 20160307 and p_product = 'ANDROID_EYEPETIZER'
+limit 100

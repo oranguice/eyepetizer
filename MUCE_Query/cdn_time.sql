@@ -12,3 +12,11 @@ where
  event_package.task_event.status='PENDING' and
  substring(common_package.id_package.identity, 40, 1) not in ('0','1','2','3','4','5','6','7')
 sort by timing_start, timing_duration	
+
+
+
+select p_date, sum(case when timing_duration > 0 and timing_duration <= 5000 then 1 else 0 end), sum(case when timing_duration > 5000 and timing_duration <= 30000 then 1 else 0 end), sum(case when timing_duration > 30000 then 1 else 0 end)
+from muce_app_client.taskevent
+where p_date = 20160306 and p_product = 'ANDROID_EYEPETIZER' and task_action = 'PLAY' and task_result_info = 'timing1'
+
+

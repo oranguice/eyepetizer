@@ -13,3 +13,11 @@ from (
 		group by id) a
 	group by id) b
 --10月新用户 retention
+
+
+
+select count(distinct case when p_product = 'IOS_EYEPETIZER' then id else null end), count(distinct case when p_product = 'ANDROID_EYEPETIZER' then id else null end)
+from muce_topic.applicationstart
+where p_date >= 20160324 and p_date <= 20160422
+--22日
+

@@ -59,19 +59,19 @@ from (
 			( 
 					select concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)) as pp_date, id, 1 as col_flag 
 						from muce_topic.applicationstart
-						where is_start_new = 1 and p_date >= 20151009 and p_date <= 20151015 and p_product = 'IOS_EYEPETIZER'
+						where is_start_new = 1 and p_date >= 20160319 and p_date <= 20160323 and p_product = 'IOS_EYEPETIZER'
 					group by concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), id
 				union all 
 					select date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 30) as pp_date, id, 2 as col_flag 
-						from muce_topic.common
-						where p_date >= 20151108 and p_date <= 20151114 and p_product = 'IOS_EYEPETIZER'
+						from muce_topic.applicationstart
+						where p_date >= 20160418 and p_date <= 20160422 and p_product = 'IOS_EYEPETIZER'
 					group by date_sub(concat(substring(p_date, 1, 4), '-', substring(p_date, 5, 2), '-', substring(p_date, 7, 2)), 30), id
 			)ta 
 			group by pp_date, id
 		)tb
 	group by pp_date, col_flag )tc
 group by pp_date
---ios第三十日活跃
+--ios用户第30日留存率
 
 
 
